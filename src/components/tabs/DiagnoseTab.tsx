@@ -18,6 +18,7 @@ import { DiagnoseResponse } from "@/types/api";
 import { SystemStatusResponse } from "@/types/api";
 import { CitationCard } from "../ui/CitationCard";
 import { TurnstileVerification } from "../security/TurnstileVerification";
+import { LiveStaleBadge } from "../ui/LiveStaleBadge";
 
 interface DiagnoseTabProps {
   diagnoseResult: DiagnoseResponse | null;
@@ -221,11 +222,13 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                   <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
                     <AlertCircle className="h-4 w-4 text-status-warning" />
                     <span>Stale ({systemStatus.nebiusModel})</span>
-                    {systemStatus.nebiusStaleTimestamp && (
-                      <span className="text-[10px] font-mono font-bold bg-[#FEF3C7] text-status-warning px-1.5 py-0.5 rounded border border-status-warning/30">
-                        {new Date(systemStatus.nebiusStaleTimestamp).toLocaleTimeString()}
-                      </span>
-                    )}
+                    <LiveStaleBadge
+                      timestamp={systemStatus.nebiusStaleTimestamp}
+                      fallbackStorageKey="varanasi_nebius_verified"
+                      showTimeOfDay
+                      showIcon
+                      className="text-[10px] bg-[#FEF3C7] text-status-warning border-status-warning/30 px-1.5 py-0.5"
+                    />
                   </span>
                 ) : systemStatus.nebiusStatus === "CONFIGURED" ? (
                   <span className="text-text-secondary flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
@@ -278,11 +281,13 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                   <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
                     <AlertCircle className="h-4 w-4 text-status-warning" />
                     <span>Search Verified (STALE)</span>
-                    {systemStatus.tavilyStaleTimestamp && (
-                      <span className="text-[10px] font-mono font-bold bg-[#FEF3C7] text-status-warning px-1.5 py-0.5 rounded border border-status-warning/30">
-                        {new Date(systemStatus.tavilyStaleTimestamp).toLocaleTimeString()}
-                      </span>
-                    )}
+                    <LiveStaleBadge
+                      timestamp={systemStatus.tavilyStaleTimestamp}
+                      fallbackStorageKey="varanasi_tavily_verified"
+                      showTimeOfDay
+                      showIcon
+                      className="text-[10px] bg-[#FEF3C7] text-status-warning border-status-warning/30 px-1.5 py-0.5"
+                    />
                   </span>
                 ) : systemStatus.tavilyStatus === "CONFIGURED" ? (
                   <span className="text-text-secondary flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>

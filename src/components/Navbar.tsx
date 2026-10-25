@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SystemStatusResponse, IntegrationState } from "@/types/api";
 import { DEMO_FIXTURES, DemoFixture } from "@/lib/fixtures/demo-workloads";
+import { LiveStaleBadge } from "@/components/ui/LiveStaleBadge";
 
 interface NavbarProps {
   activeTab: string;
@@ -72,18 +73,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     switch (status) {
       case "CONNECTED":
         if (isStale) {
-          const timeStr = staleTimestamp ? new Date(staleTimestamp).toLocaleTimeString() : "";
           return (
             <div
               className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-[#FEF3C7] text-text-primary px-2 py-0.5 rounded-[4px] border border-status-warning/40 shadow-sm"
-              title={`${label} Connected (STALE: verified at ${timeStr}). ${error || ""}`}
+              title={`${label} Connected (STALE historical verification). ${error || ""}`}
             >
               <span className="h-2 w-2 rounded-full bg-status-warning" />
               <span className="text-text-secondary">{label}:</span>
               <span className="font-semibold text-text-primary">Connected</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider bg-white px-1 rounded text-status-warning border border-status-warning/30">
-                Stale
-              </span>
+              <LiveStaleBadge
+                timestamp={staleTimestamp}
+                fallbackStorageKey={label === "Tavily" ? "varanasi_tavily_verified" : label === "Nebius" ? "varanasi_nebius_verified" : undefined}
+                prefix="Stale"
+              />
             </div>
           );
         }
@@ -98,18 +100,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         );
       case "STALE": {
-        const timeStr = staleTimestamp ? new Date(staleTimestamp).toLocaleTimeString() : "";
         return (
           <div
             className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-[#FEF3C7] text-text-primary px-2 py-0.5 rounded-[4px] border border-status-warning/40 shadow-sm"
-            title={`${label} historical verified connection (STALE at ${timeStr}). ${error || ""}`}
+            title={`${label} historical verified connection (STALE). Search workflow remains operational.`}
           >
             <span className="h-2 w-2 rounded-full bg-status-warning" />
             <span className="text-text-secondary">{label}:</span>
             <span className="font-semibold text-text-primary">Stale</span>
-            <span className="text-[9px] font-bold uppercase tracking-wider bg-white px-1 rounded text-status-warning border border-status-warning/30">
-              {timeStr || "Cached"}
-            </span>
+            <LiveStaleBadge
+              timestamp={staleTimestamp}
+              fallbackStorageKey={label === "Tavily" ? "varanasi_tavily_verified" : label === "Nebius" ? "varanasi_nebius_verified" : undefined}
+            />
           </div>
         );
       }

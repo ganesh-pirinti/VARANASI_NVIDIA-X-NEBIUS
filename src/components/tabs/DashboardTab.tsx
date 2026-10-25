@@ -21,6 +21,7 @@ import { FinOpsComparisonResult, FinOpsCalculationResult } from "@/types/finops"
 import { RunCostPassport } from "@/types/passport";
 import { SystemStatusResponse } from "@/types/api";
 import { StatusBadge } from "../ui/StatusBadge";
+import { LiveStaleBadge } from "../ui/LiveStaleBadge";
 import { DEMO_FIXTURES, DemoFixture } from "@/lib/fixtures/demo-workloads";
 
 interface DashboardTabProps {
@@ -313,7 +314,16 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   : systemStatus.nebiusStatus === "CONNECTED"
                   ? "CONNECTED"
                   : systemStatus.nebiusStatus === "STALE"
-                  ? "STALE (CACHED)"
+                  ? (
+                    <span className="inline-flex items-center gap-1">
+                      <span>STALE</span>
+                      <LiveStaleBadge
+                        timestamp={systemStatus.nebiusStaleTimestamp}
+                        fallbackStorageKey="varanasi_nebius_verified"
+                        className="bg-transparent border-none p-0 text-[10px] text-text-primary font-normal lowercase tracking-normal"
+                      />
+                    </span>
+                  )
                   : systemStatus.nebiusStatus === "RATE_LIMITED"
                   ? "RATE LIMITED"
                   : systemStatus.nebiusStatus}
@@ -355,7 +365,16 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   : systemStatus.tavilyStatus === "CONNECTED"
                   ? "CONNECTED"
                   : systemStatus.tavilyStatus === "STALE"
-                  ? "STALE (CACHED)"
+                  ? (
+                    <span className="inline-flex items-center gap-1">
+                      <span>STALE</span>
+                      <LiveStaleBadge
+                        timestamp={systemStatus.tavilyStaleTimestamp}
+                        fallbackStorageKey="varanasi_tavily_verified"
+                        className="bg-transparent border-none p-0 text-[10px] text-text-primary font-normal lowercase tracking-normal"
+                      />
+                    </span>
+                  )
                   : systemStatus.tavilyStatus === "RATE_LIMITED"
                   ? "RATE LIMITED"
                   : systemStatus.tavilyStatus}
