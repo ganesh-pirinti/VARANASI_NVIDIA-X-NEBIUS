@@ -9,65 +9,61 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Clean, Classic, Professional NVIDIA Black / White / Grey / Green Palette
+        // Professional White & NVIDIA Green Design System
         app: {
-          DEFAULT: "#0A0A0A", // Near-black background
-          secondary: "#121212", // Secondary dark surface
-          elevated: "#181818", // Elevated panel surface
-          card: "#1E1E1E", // Card surface
-          input: "#141414", // Recessed input surface
+          DEFAULT: "#FFFFFF", // Main white background
+          secondary: "#F5F6F7", // Secondary light grey surface
+          elevated: "#FFFFFF", // Elevated pure white surface
+          card: "#FFFFFF", // Card pure white background
+          input: "#FFFFFF", // Input pure white background
         },
         surface: {
-          app: "#0A0A0A",
-          secondary: "#121212",
-          elevated: "#181818",
-          card: "#1E1E1E",
-          input: "#141414",
+          app: "#FFFFFF",
+          secondary: "#F5F6F7",
+          elevated: "#FFFFFF",
+          card: "#FFFFFF",
+          input: "#FFFFFF",
         },
         nvidia: {
           green: "#76B900", // Signature NVIDIA Green
-          light: "#8ED100", // Bright highlight / hover
-          dark: "#5E9400", // Dark active green
-          surface: "rgba(118, 185, 0, 0.08)", // Subtle green tint for badges / highlights
-          border: "rgba(118, 185, 0, 0.35)", // Subtle green border
+          hover: "#659F00", // Green hover state
+          surface: "#F2F8E8", // Pale green surface for active states/badges
+          dark: "#355900", // Dark green text for pale green surfaces
+          light: "#659F00", // Green active/hover alias
+          border: "#76B900", // Green border accent
         },
-        // Aliased to green/white/grey to ensure zero cyan/teal/blue leaks
+        // Neutralized aliases
         nebius: {
           cyan: "#76B900",
           teal: "#76B900",
-          blue: "#CCCCCC",
-          soft: "#8ED100",
+          blue: "#555A60",
+          soft: "#659F00",
         },
         text: {
-          primary: "#FFFFFF", // Crisp white
-          secondary: "#CCCCCC", // Clean light grey
-          muted: "#888888", // Balanced neutral grey
+          primary: "#1F1F1F", // Primary charcoal text
+          secondary: "#555A60", // Secondary text
+          muted: "#707780", // Muted text
         },
         border: {
-          standard: "#2A2A2A", // Clean subtle grey border
-          subtle: "#1F1F1F", // Minimal recessed border
-          active: "#404040", // Focused/hover grey border
+          standard: "#DADDE1", // Standard grey border
+          subtle: "#E8EAED", // Subtle light grey border
+          hover: "#B8C0C8", // Card hover border
+          active: "#76B900", // Focused/active green border
         },
         status: {
-          success: "#76B900", // NVIDIA Green
-          warning: "#E5A93C", // Crisp Amber
-          error: "#EF4444", // Clean Red
-          info: "#CCCCCC", // Neutral clean grey
+          success: "#2E7D32", // Verified Success green
+          warning: "#B45309", // Warning dark amber
+          error: "#C62828", // Error dark red
+          info: "#2563EB", // Information blue
         },
-        // Neutral dark grey scale
-        navy: {
-          950: "#0A0A0A",
-          900: "#121212",
-          850: "#181818",
-          800: "#1E1E1E",
-          750: "#242424",
-          700: "#2A2A2A",
-          650: "#1F1F1F",
-          600: "#404040",
+        disabled: {
+          text: "#9CA3AF",
+          bg: "#F3F4F6",
         },
       },
       fontFamily: {
         sans: [
+          "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
           '"Segoe UI"',
@@ -77,6 +73,7 @@ const config: Config = {
           "sans-serif",
         ],
         mono: [
+          "JetBrains Mono",
           "ui-monospace",
           "SFMono-Regular",
           "Menlo",
@@ -88,13 +85,13 @@ const config: Config = {
         ],
       },
       boxShadow: {
-        "card": "0 2px 8px rgba(0, 0, 0, 0.6), 0 0 0 1px #262626",
-        "card-hover": "0 4px 16px rgba(0, 0, 0, 0.8), 0 0 0 1px #3A3A3A",
-        "nvidia-glow": "0 0 16px -2px rgba(118, 185, 0, 0.25)",
-        "nebius-glow": "0 0 16px -2px rgba(118, 185, 0, 0.25)",
+        "card": "0 2px 8px rgba(0, 0, 0, 0.04)",
+        "card-hover": "0 4px 12px rgba(0, 0, 0, 0.08)",
+        "nvidia-glow": "0 2px 8px rgba(118, 185, 0, 0.20)",
+        "nebius-glow": "0 2px 8px rgba(118, 185, 0, 0.20)",
       },
       borderRadius: {
-        "card": "14px",
+        "card": "12px",
       },
     },
   },

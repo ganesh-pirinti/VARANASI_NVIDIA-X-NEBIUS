@@ -31,18 +31,18 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
   const lines = diff.split(/\r?\n/);
 
   return (
-    <div className="rounded-xl border border-border-standard bg-surface-card overflow-hidden font-mono text-xs shadow-card">
+    <div className="rounded-[12px] border border-border-standard bg-white overflow-hidden font-mono text-[12px] shadow-card">
       {/* Diff Header */}
-      <div className="flex flex-wrap items-center justify-between border-b border-border-subtle bg-surface-elevated px-4 py-3 gap-2">
+      <div className="flex flex-wrap items-center justify-between border-b border-border-subtle bg-surface-secondary px-4 py-3 gap-2">
         <div className="flex items-center gap-2.5 text-text-primary">
           <FileCode className="h-4 w-4 text-nvidia-green" />
-          <span className="font-semibold text-text-primary text-xs sm:text-sm">{fileName}</span>
-          <span className="text-[11px] text-text-muted hidden sm:inline">(Reviewable Unified Diff)</span>
+          <span className="font-semibold text-text-primary text-[13px]">{fileName}</span>
+          <span className="text-[12px] text-text-muted hidden sm:inline">(Reviewable Unified Diff)</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nvidia-green hover:text-text-primary transition"
+            className="flex items-center gap-1.5 rounded-[6px] border border-border-standard bg-white px-3 py-1.5 text-[12px] font-semibold text-text-primary hover:bg-surface-secondary transition"
             title="Copy Patched Content"
           >
             {copied ? (
@@ -54,7 +54,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nvidia-green hover:text-text-primary transition"
+            className="flex items-center gap-1.5 rounded-[6px] border border-border-standard bg-white px-3 py-1.5 text-[12px] font-semibold text-text-primary hover:bg-surface-secondary transition"
             title="Download Patched File"
           >
             <Download className="h-3.5 w-3.5 text-text-muted" />
@@ -64,20 +64,20 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
       </div>
 
       {/* Diff Content */}
-      <div className="overflow-x-auto p-4 max-h-[440px] leading-relaxed bg-surface-input">
+      <div className="overflow-x-auto p-4 max-h-[440px] leading-relaxed bg-white">
         {lines.map((line, idx) => {
-          let lineBg = "text-text-muted hover:bg-surface-elevated/40";
+          let lineBg = "text-text-secondary hover:bg-surface-secondary/60";
           if (line.startsWith("+") && !line.startsWith("+++")) {
-            lineBg = "bg-nvidia-surface text-nvidia-light border-l-2 border-nvidia-green pl-2";
+            lineBg = "bg-nvidia-surface text-nvidia-dark border-l-2 border-nvidia-green pl-2 font-medium";
           } else if (line.startsWith("-") && !line.startsWith("---")) {
-            lineBg = "bg-status-error/10 text-status-error border-l-2 border-status-error pl-2";
+            lineBg = "bg-[#FEE2E2] text-[#C62828] border-l-2 border-[#C62828] pl-2 font-medium";
           } else if (line.startsWith("@@") || line.startsWith("---") || line.startsWith("+++")) {
-            lineBg = "text-text-primary font-bold bg-surface-elevated/80 py-0.5 px-1 rounded";
+            lineBg = "text-text-primary font-bold bg-[#E8EAED] py-0.5 px-1 rounded";
           }
 
           return (
-            <div key={idx} className={`flex items-start font-mono text-[11px] sm:text-xs py-0.5 ${lineBg}`}>
-              <span className="w-8 shrink-0 select-none text-right pr-3 text-text-muted/60 text-[10px]">
+            <div key={idx} className={`flex items-start font-mono text-[12px] py-0.5 ${lineBg}`}>
+              <span className="w-8 shrink-0 select-none text-right pr-3 text-text-muted text-[11px]">
                 {idx + 1}
               </span>
               <span className="whitespace-pre overflow-x-visible">{line}</span>

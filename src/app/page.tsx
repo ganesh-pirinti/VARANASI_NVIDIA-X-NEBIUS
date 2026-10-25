@@ -483,15 +483,15 @@ export default function Home() {
       </main>
 
       {/* Enterprise Footer */}
-      <footer className="border-t border-border-standard bg-surface-secondary py-8 text-center text-xs text-text-muted">
+      <footer className="border-t border-border-standard bg-surface-secondary py-8 text-center text-[13px] text-text-secondary">
         <div className="mx-auto max-w-7xl px-4 space-y-1.5">
-          <p className="font-semibold text-text-primary text-sm tracking-wide">
+          <p className="font-semibold text-text-primary text-[14px] tracking-tight">
             VARANASI — Autonomous GPU RunGuard &amp; FinOps Margin Engine
           </p>
-          <p className="text-text-secondary">
-            Track: <span className="text-nvidia-green font-medium">Coding and Agentic Engineering</span> | Nebius × NVIDIA Global AI Hackathon 2026
+          <p className="text-[13px] text-text-secondary">
+            Track: <span className="text-nvidia-dark font-semibold">Coding and Agentic Engineering</span> | Nebius × NVIDIA Global AI Hackathon 2026
           </p>
-          <p className="text-[11px] text-text-muted">
+          <p className="text-[12px] text-text-muted">
             Catch failures. Protect compute. Protect margins. All rights reserved.
           </p>
         </div>

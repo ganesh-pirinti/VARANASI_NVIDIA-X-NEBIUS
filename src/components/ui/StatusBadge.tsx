@@ -16,7 +16,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = "md" })
   if (status === "PASS") {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-md border border-nvidia-border bg-nvidia-surface text-nvidia-green font-mono ${sizeClasses[size]}`}
+        className={`inline-flex items-center gap-1.5 rounded-[6px] border border-nvidia-green/40 bg-nvidia-surface text-nvidia-dark font-mono font-semibold ${sizeClasses[size]}`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-nvidia-green"></span>
         PASS
@@ -27,7 +27,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = "md" })
   if (status === "FAIL") {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-md border border-status-error/40 bg-status-error/15 text-status-error font-mono ${sizeClasses[size]}`}
+        className={`inline-flex items-center gap-1.5 rounded-[6px] border border-status-error/30 bg-[#FEE2E2] text-status-error font-mono font-semibold ${sizeClasses[size]}`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-status-error"></span>
         FAIL
@@ -37,9 +37,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = "md" })
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border border-status-warning/40 bg-status-warning/15 text-status-warning font-mono ${sizeClasses[size]}`}
+      className={`inline-flex items-center gap-1.5 rounded-[6px] border border-border-standard bg-surface-secondary text-text-primary font-mono font-semibold ${sizeClasses[size]}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-status-warning"></span>
+      <span className="h-1.5 w-1.5 rounded-full bg-text-muted"></span>
       UNKNOWN
     </span>
   );
@@ -47,16 +47,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = "md" })
 
 export const SeverityBadge: React.FC<{ severity: Severity }> = ({ severity }) => {
   const styles: Record<Severity, string> = {
-    CRITICAL: "border-status-error/50 bg-status-error/15 text-status-error",
-    HIGH: "border-status-warning/50 bg-status-warning/15 text-status-warning",
-    MEDIUM: "border-amber-500/40 bg-amber-500/10 text-amber-300",
-    LOW: "border-border-standard bg-surface-elevated text-text-secondary",
-    INFO: "border-border-standard bg-surface-elevated text-text-muted",
+    CRITICAL: "border-status-error/30 bg-[#FEE2E2] text-status-error",
+    HIGH: "border-status-warning/30 bg-[#FEF3C7] text-status-warning",
+    MEDIUM: "border-border-standard bg-[#FEF3C7] text-status-warning",
+    LOW: "border-border-standard bg-surface-secondary text-text-secondary",
+    INFO: "border-border-subtle bg-surface-secondary text-text-muted",
   };
 
   return (
     <span
-      className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-mono font-bold tracking-wider border ${styles[severity] || styles.INFO}`}
+      className={`inline-block rounded-[6px] px-2 py-0.5 text-[10px] font-mono font-bold tracking-wider border ${styles[severity] || styles.INFO}`}
     >
       {severity}
     </span>

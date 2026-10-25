@@ -16,11 +16,11 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
   }
 
   return (
-    <div className="rounded-xl border border-border-standard bg-surface-card p-4 hover:border-nvidia-green/50 transition shadow-card">
+    <div className="rounded-[12px] border border-border-standard bg-white p-5 hover:border-border-hover transition shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <BookOpen className="h-4 w-4 text-nvidia-green shrink-0" />
-          <span className="text-xs font-semibold text-text-primary line-clamp-1">
+          <span className="text-[14px] font-semibold text-text-primary line-clamp-1">
             {citation.title}
           </span>
         </div>
@@ -29,7 +29,7 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
             href={citation.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[11px] font-mono text-text-primary hover:text-nvidia-green hover:underline shrink-0"
+            className="flex items-center gap-1 text-[12px] font-mono text-text-secondary hover:text-nvidia-green hover:underline shrink-0"
           >
             <span>{domain}</span>
             <ExternalLink className="h-3 w-3" />
@@ -37,17 +37,17 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
         )}
       </div>
 
-      <p className="mt-2.5 text-xs text-text-secondary leading-relaxed line-clamp-3">
+      <p className="mt-2.5 text-[13px] text-text-secondary leading-[1.5] line-clamp-3">
         {citation.snippet}
       </p>
 
-      <div className="mt-3 flex items-center justify-between border-t border-border-subtle pt-2.5 text-[10px]">
-        <span className="flex items-center gap-1 text-nvidia-green font-mono font-medium">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          Live Verified External Reference
+      <div className="mt-3 flex items-center justify-between border-t border-border-subtle pt-2.5 text-[12px]">
+        <span className="flex items-center gap-1.5 text-nvidia-dark font-mono font-medium bg-nvidia-surface px-2 py-0.5 rounded-[4px] border border-nvidia-green/30">
+          <ShieldCheck className="h-3.5 w-3.5 text-nvidia-green" />
+          Live Verified Reference
         </span>
         {citation.relevanceScore !== undefined && (
-          <span className="font-mono text-text-muted">
+          <span className="font-mono text-text-muted text-[11px]">
             Relevance: {(citation.relevanceScore * 100).toFixed(0)}%
           </span>
         )}
