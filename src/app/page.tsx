@@ -273,7 +273,7 @@ export default function Home() {
       const errorMsg = err instanceof Error ? err.message : "Diagnostic execution failed";
       setDiagnoseResult({
         success: false,
-        modelUsed: systemStatus?.nebiusModel || "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+        modelUsed: systemStatus?.nebiusModel || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
         likelyRootCause: "Could not execute remote diagnostic API call.",
         alternativeExplanations: [],
         suggestedActionPlan: [],

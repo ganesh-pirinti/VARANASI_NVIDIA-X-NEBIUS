@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          modelUsed: process.env.NEBIUS_MODEL || "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+          modelUsed: process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
           likelyRootCause: "No diagnostic logs or configuration files provided for investigation.",
           alternativeExplanations: [],
           suggestedActionPlan: [],
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        modelUsed: process.env.NEBIUS_MODEL || "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+        modelUsed: process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
         likelyRootCause: "Diagnostic workflow encountered an unhandled exception.",
         alternativeExplanations: [],
         suggestedActionPlan: [],

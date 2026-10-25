@@ -95,7 +95,7 @@ VARANASI features an original enterprise design system inspired by **Nebius clou
 
 ### A. Nebius Token Factory & NVIDIA Open-Source Model
 - **Endpoint**: OpenAI-compatible `/chat/completions` API via `https://api.tokenfactory.nebius.com/v1/`
-- **Model**: `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF` (or `nvidia/Nemotron-3_5-Lightning`)
+- **Model**: `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` (or `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF`)
 - **Role in VARANASI**: Contextual root-cause reasoning over sanitized execution traces and cluster manifests.
 - **Privacy & Safety Boundary**:
   - The model **never** receives unfiltered raw repositories or environment files.
@@ -240,7 +240,7 @@ Edit `.env.local`:
 # Nebius Token Factory API Key
 NEBIUS_API_KEY=your_actual_nebius_api_key_here
 NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1
-NEBIUS_MODEL=nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
+NEBIUS_MODEL=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
 
 # Tavily Technical Search API Key
 TAVILY_API_KEY=your_actual_tavily_api_key_here
@@ -251,7 +251,7 @@ TAVILY_API_KEY=your_actual_tavily_api_key_here
 ```bash
 npm test
 ```
-Runs 26 unit tests across GPU cost calculations (on-demand vs preemptible, GPU-hour vs instance-hour), token pricing, unverified price handling, source attribution, preflight checks, VRAM calculations, secret sanitization, and passport generation.
+Runs 29 unit tests across GPU cost calculations (on-demand vs preemptible, GPU-hour vs instance-hour), token pricing, unverified price handling, source attribution, custom validation rules, preflight checks, VRAM calculations, secret sanitization, and passport generation.
 
 ### Step 4: Run Development Server
 ```bash
