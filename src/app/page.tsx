@@ -102,14 +102,13 @@ export default function Home() {
   const statusRequestIdRef = useRef(0);
 
   // Fetch system status with active caching, sequence tracking & on-demand refresh support
-  const fetchStatus = useCallback(async (bypassCache = false, verifySearch = false, verifyInference = false) => {
+  const fetchStatus = useCallback(async (bypassCache = false, verifyInference = false) => {
     const currentRequestId = ++statusRequestIdRef.current;
     if (bypassCache) setIsRefreshingStatus(true);
 
     try {
       const params = new URLSearchParams();
       if (bypassCache) params.set("refresh", "true");
-      if (verifySearch) params.set("verifySearch", "true");
       if (verifyInference) params.set("verifyInference", "true");
 
       // Check durable client storage for prior verified timestamps (survives Vercel cold starts)
@@ -314,8 +313,8 @@ export default function Home() {
     }
   };
 
-  // Run Real-time Diagnosis
-  const handleRunDiagnosis = async () => {
+  // Run Real-time Diagnosis (Protected by Cloudflare Turnstile)
+  const handleRunDiagnosis = async (turnstileToken?: string) => {
     setIsLoadingDiagnose(true);
     try {
       const res = await fetch("/api/diagnose", {
@@ -327,6 +326,7 @@ export default function Home() {
           workloadConfigContent: inputs.workloadConfigContent,
           projectName: inputs.projectName,
           targetGpu: inputs.targetGpu,
+          turnstileToken: turnstileToken || "",
         }),
       });
 
@@ -373,6 +373,37 @@ export default function Home() {
       });
     } finally {
       setIsLoadingDiagnose(false);
+    }
+  };
+
+  // Verify Genuine Search Query Capability (Protected by Cloudflare Turnstile POST)
+  const handleVerifySearch = async (turnstileToken?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch("/api/tavily-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "NVIDIA Hopper H100 GPU architecture",
+          maxResults: 1,
+          turnstileToken: turnstileToken || "",
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("varanasi_tavily_verified", new Date().toISOString());
+          } catch {
+            // Ignore
+          }
+        }
+        fetchStatus(true);
+      }
+      return data;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Search verification request failed";
+      return { success: false, error: msg };
     }
   };
 
@@ -573,8 +604,8 @@ export default function Home() {
             systemStatus={systemStatus}
             setActiveTab={setActiveTab}
             onRefreshStatus={() => fetchStatus(true)}
-            onVerifySearch={() => fetchStatus(true, true, false)}
-            onVerifyInference={() => fetchStatus(true, false, true)}
+            onVerifySearch={handleVerifySearch}
+            onVerifyInference={() => fetchStatus(true, true)}
             isRefreshingStatus={isRefreshingStatus}
           />
         )}

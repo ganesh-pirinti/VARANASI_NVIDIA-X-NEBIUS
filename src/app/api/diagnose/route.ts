@@ -1,29 +1,99 @@
 import { NextRequest, NextResponse } from "next/server";
 import { queryNebiusDiagnostic } from "@/lib/nebius/client";
 import { executeTavilySearch } from "@/lib/tavily/client";
-import { DiagnoseRequest, DiagnoseResponse } from "@/types/api";
+import { DiagnoseResponse } from "@/types/api";
+import { DiagnoseRequestSchema, formatZodError } from "@/lib/security/validators";
+import { verifyTurnstileToken } from "@/lib/security/turnstile";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
 
 export async function POST(req: NextRequest) {
-  try {
-    const body: DiagnoseRequest = await req.json();
+  const modelUsed = process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
+  const clientIp = getClientIp(req);
 
-    if (!body.diagnosticLog && !body.dockerfileContent && !body.workloadConfigContent) {
+  try {
+    // 1. Parse and validate JSON payload with deterministic Zod schema
+    let rawBody;
+    try {
+      rawBody = await req.json();
+    } catch {
       return NextResponse.json(
         {
           success: false,
-          modelUsed: process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
-          likelyRootCause: "No diagnostic logs or configuration files provided for investigation.",
+          modelUsed,
+          likelyRootCause: "Invalid JSON payload in request.",
           alternativeExplanations: [],
           suggestedActionPlan: [],
           citations: [],
           sanitizedTokensProcessed: 0,
-          error: "At least one log trace or configuration file is required for diagnosis.",
+          error: "Malformed JSON request body.",
         },
         { status: 400 }
       );
     }
 
-    // Formulate targeted Tavily search query based on log content
+    const validationResult = DiagnoseRequestSchema.safeParse(rawBody);
+    if (!validationResult.success) {
+      const errorMsg = formatZodError(validationResult.error);
+      return NextResponse.json(
+        {
+          success: false,
+          modelUsed,
+          likelyRootCause: "Request validation failed.",
+          alternativeExplanations: [],
+          suggestedActionPlan: [],
+          citations: [],
+          sanitizedTokensProcessed: 0,
+          error: errorMsg,
+        },
+        { status: 400 }
+      );
+    }
+
+    const body = validationResult.data;
+
+    // 2. Server-Side Rate Limiter Guardrail (10 requests per minute per IP)
+    const rateLimit = await checkRateLimit(`diagnose:${clientIp}`, 10, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          modelUsed,
+          likelyRootCause: "Diagnostic request rate limit exceeded.",
+          alternativeExplanations: [],
+          suggestedActionPlan: ["Please wait before initiating another deep diagnostic query."],
+          citations: [],
+          sanitizedTokensProcessed: 0,
+          error: rateLimit.error || "Rate limit reached. Please wait before retrying.",
+        },
+        { status: 429 }
+      );
+    }
+
+    // 3. Cloudflare Turnstile Token Verification
+    // CRITICAL: Must verify BEFORE sending any request to Nebius or Tavily!
+    const turnstileResult = await verifyTurnstileToken({
+      token: body.turnstileToken,
+      action: "varanasi_diagnose",
+      clientIp,
+    });
+
+    if (!turnstileResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          modelUsed,
+          likelyRootCause: "Security verification challenge failed.",
+          alternativeExplanations: [],
+          suggestedActionPlan: ["Complete the security challenge on the client before proceeding."],
+          citations: [],
+          sanitizedTokensProcessed: 0,
+          error: turnstileResult.error || "Security challenge verification failed.",
+        },
+        { status: turnstileResult.status }
+      );
+    }
+
+    // 4. Formulate targeted Tavily search query based on log content
     let searchQuery = "NVIDIA CUDA PyTorch error troubleshooting";
     if (body.diagnosticLog) {
       if (/OutOfMemoryError|CUDA out of memory/i.test(body.diagnosticLog)) {
@@ -39,7 +109,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Execute Nebius Model Inference and Tavily search concurrently
+    // 5. Execute Nebius Model Inference and Tavily search concurrently
     const [nebiusResult, tavilyResult] = await Promise.all([
       queryNebiusDiagnostic({
         diagnosticLog: body.diagnosticLog || "",
@@ -54,7 +124,7 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
-    // Construct response
+    // 6. Construct response
     const response: DiagnoseResponse = {
       success: nebiusResult.success,
       modelUsed: nebiusResult.modelUsed,
@@ -75,7 +145,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        modelUsed: process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+        modelUsed,
         likelyRootCause: "Diagnostic workflow encountered an unhandled exception.",
         alternativeExplanations: [],
         suggestedActionPlan: [],

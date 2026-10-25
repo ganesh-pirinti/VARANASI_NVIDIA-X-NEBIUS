@@ -223,12 +223,13 @@ describe("System Status API Route (/api/status)", () => {
     expect(data.tavilyError).toContain("STALE");
   });
 
-  it("verifies genuine search connectivity when verifySearch=true returns 200 OK", async () => {
+  it("verifies that GET /api/status never executes unprotected searches and queries /usage safely", async () => {
     process.env.NEBIUS_API_KEY = "mock-nebius-key";
     process.env.TAVILY_API_KEY = "tvly-mock-key";
     process.env.NEBIUS_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
 
     let searchCalled = false;
+    let usageCalled = false;
     global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
       const urlStr = url.toString();
       if (urlStr.includes("nebius.com")) {
@@ -243,20 +244,27 @@ describe("System Status API Route (/api/status)", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: async () => ({
-            query: "NVIDIA Hopper H100 GPU architecture",
-            results: [{ title: "NVIDIA H100 Architecture", url: "https://nvidia.com/h100" }],
-          }),
+          json: async () => ({ results: [] }),
+        });
+      }
+      if (urlStr.includes("tavily.com/usage")) {
+        usageCalled = true;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ plan: "Developer", searches_used: 10 }),
         });
       }
       return Promise.reject(new Error("Unknown URL"));
     });
 
-    const req = new NextRequest("http://localhost:3000/api/status?verifySearch=true");
+    const req = new NextRequest("http://localhost:3000/api/status");
     const res = await GET(req);
     const data = await res.json();
 
-    expect(searchCalled).toBe(true);
+    // Must NEVER execute search on status polling
+    expect(searchCalled).toBe(false);
+    expect(usageCalled).toBe(true);
     expect(data.tavilyStatus).toBe("CONNECTED");
     expect(data.tavilyStatusCode).toBe(200);
     expect(data.tavilySearchAvailable).toBe(true);

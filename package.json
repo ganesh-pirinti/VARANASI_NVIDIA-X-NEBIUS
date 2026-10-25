@@ -12,12 +12,14 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.6.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
     "next": "^14.2.24",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^20.17.24",

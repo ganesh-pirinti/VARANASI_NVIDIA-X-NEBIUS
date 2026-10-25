@@ -17,6 +17,7 @@ export interface DiagnoseRequest {
   workloadConfigContent?: string;
   projectName?: string;
   targetGpu?: string;
+  turnstileToken?: string;
 }
 
 export interface DiagnoseResponse {
@@ -39,6 +40,7 @@ export interface DiagnoseResponse {
 export interface TavilySearchRequest {
   query: string;
   maxResults?: number;
+  turnstileToken?: string;
 }
 
 export interface TavilySearchResponse {

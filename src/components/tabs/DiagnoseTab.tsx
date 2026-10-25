@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Sparkles, 
   Search, 
@@ -10,20 +10,23 @@ import {
   ShieldAlert, 
   RefreshCw,
   RotateCw,
-  Info
+  Info,
+  ShieldCheck,
+  Lock
 } from "lucide-react";
 import { DiagnoseResponse } from "@/types/api";
 import { SystemStatusResponse } from "@/types/api";
 import { CitationCard } from "../ui/CitationCard";
+import { TurnstileVerification } from "../security/TurnstileVerification";
 
 interface DiagnoseTabProps {
   diagnoseResult: DiagnoseResponse | null;
-  onRunDiagnosis: () => Promise<void>;
+  onRunDiagnosis: (turnstileToken?: string) => Promise<void>;
   isLoading: boolean;
   systemStatus: SystemStatusResponse | null;
   setActiveTab: (tab: string) => void;
   onRefreshStatus?: () => void;
-  onVerifySearch?: () => void;
+  onVerifySearch?: (turnstileToken?: string) => Promise<any>;
   onVerifyInference?: () => void;
   isRefreshingStatus?: boolean;
 }
@@ -39,6 +42,47 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
   onVerifyInference,
   isRefreshingStatus = false,
 }) => {
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [resetTrigger, setResetTrigger] = useState(0);
+  const [isVerifyingSearch, setIsVerifyingSearch] = useState(false);
+  const [searchNotice, setSearchNotice] = useState<string | null>(null);
+
+  const siteKeyConfigured = Boolean(
+    typeof process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY === "string" &&
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY.trim().length > 0
+  );
+
+  const handleExecuteDiagnosis = async () => {
+    try {
+      await onRunDiagnosis(turnstileToken || undefined);
+    } finally {
+      // Require a fresh token for subsequent protected requests
+      setResetTrigger((prev) => prev + 1);
+      setTurnstileToken(null);
+    }
+  };
+
+  const handleExecuteSearchVerification = async () => {
+    if (!onVerifySearch) return;
+    setIsVerifyingSearch(true);
+    setSearchNotice(null);
+    try {
+      const res = await onVerifySearch(turnstileToken || undefined);
+      if (res?.success) {
+        setSearchNotice("✓ Live Tavily search verified successfully! Integration state updated.");
+      } else {
+        setSearchNotice(`Notice: ${res?.error || "Search probe completed."}`);
+      }
+    } finally {
+      setIsVerifyingSearch(false);
+      setResetTrigger((prev) => prev + 1);
+      setTurnstileToken(null);
+    }
+  };
+
+  // Action button enabled if: not loading AND (token verified OR site key not configured in dev)
+  const isActionDisabled = isLoading || (siteKeyConfigured && !turnstileToken);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Top Banner */}
@@ -55,14 +99,55 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           </div>
 
           <button
-            onClick={onRunDiagnosis}
-            disabled={isLoading}
-            className="flex items-center justify-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover active:scale-[0.98] disabled:opacity-50 transition-all duration-150 shadow-card focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2 shrink-0"
+            onClick={handleExecuteDiagnosis}
+            disabled={isActionDisabled}
+            className="flex items-center justify-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 shadow-card focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2 shrink-0"
+            title={
+              siteKeyConfigured && !turnstileToken
+                ? "Complete Turnstile verification challenge to enable diagnostic query"
+                : "Launch investigation"
+            }
           >
-            {isLoading ? <RefreshCw className="h-4 w-4 animate-spin text-white" /> : <Sparkles className="h-4 w-4 text-white" />}
-            <span>{isLoading ? "Investigating..." : "Launch Real-Time Investigation"}</span>
+            {isLoading ? (
+              <RefreshCw className="h-4 w-4 animate-spin text-white" />
+            ) : siteKeyConfigured && !turnstileToken ? (
+              <Lock className="h-4 w-4 text-white" />
+            ) : (
+              <Sparkles className="h-4 w-4 text-white" />
+            )}
+            <span>
+              {isLoading
+                ? "Investigating..."
+                : siteKeyConfigured && !turnstileToken
+                ? "Verification Required"
+                : "Launch Real-Time Investigation"}
+            </span>
           </button>
         </div>
+
+        {/* Security Challenge & Verification Widget */}
+        <div className="pt-1">
+          <TurnstileVerification
+            action="varanasi_diagnose"
+            onVerify={(token) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
+            resetTrigger={resetTrigger}
+          />
+        </div>
+
+        {/* Search verification feedback notice */}
+        {searchNotice && (
+          <div className="rounded-[6px] border border-nvidia-green/40 bg-nvidia-surface p-3 text-[12px] text-nvidia-dark font-medium flex items-center justify-between">
+            <span>{searchNotice}</span>
+            <button
+              onClick={() => setSearchNotice(null)}
+              className="text-[11px] underline text-text-secondary hover:text-text-primary ml-2"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Integration Status Checks */}
         <div className="space-y-2">
@@ -82,13 +167,21 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
               )}
               {onVerifySearch && (
                 <button
-                  onClick={onVerifySearch}
-                  disabled={isRefreshingStatus}
-                  className="flex items-center gap-1.5 text-text-secondary hover:text-nvidia-dark font-sans text-[12px] font-semibold transition disabled:opacity-50"
-                  title="Perform a live Tavily search query verification to test full query capability"
+                  onClick={handleExecuteSearchVerification}
+                  disabled={isRefreshingStatus || isVerifyingSearch || (siteKeyConfigured && !turnstileToken)}
+                  className="flex items-center gap-1.5 text-text-secondary hover:text-nvidia-dark font-sans text-[12px] font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={
+                    siteKeyConfigured && !turnstileToken
+                      ? "Complete Turnstile challenge above to execute protected search probe"
+                      : "Perform a live Tavily search query verification through the protected POST workflow"
+                  }
                 >
-                  <Search className="h-3 w-3 text-nvidia-green" />
-                  <span>Verify Search Query</span>
+                  {isVerifyingSearch ? (
+                    <RefreshCw className="h-3 w-3 animate-spin text-nvidia-green" />
+                  ) : (
+                    <Search className="h-3 w-3 text-nvidia-green" />
+                  )}
+                  <span>{isVerifyingSearch ? "Searching..." : "Verify Search Query"}</span>
                 </button>
               )}
               {onRefreshStatus && (

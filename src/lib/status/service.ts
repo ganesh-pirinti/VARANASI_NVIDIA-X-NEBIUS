@@ -257,7 +257,6 @@ export async function checkNebius(
  */
 export async function checkTavily(
   apiKey: string,
-  verifySearch = false,
   clientVerifiedTimestamp?: string | null,
   bypassCooldown = false
 ): Promise<ServiceCheckResult> {
@@ -268,69 +267,7 @@ export async function checkTavily(
     };
   }
 
-  // 1. Direct Search Workflow Verification if explicitly requested
-  if (verifySearch) {
-    let searchTimeoutId: NodeJS.Timeout | null = null;
-    try {
-      const controller = new AbortController();
-      searchTimeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-      const res = await fetch("https://api.tavily.com/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          api_key: apiKey,
-          query: "NVIDIA Hopper H100 GPU architecture",
-          max_results: 1,
-        }),
-        signal: controller.signal,
-      });
-
-      const statusCode = res.status;
-      if (res.ok) {
-        return {
-          status: "CONNECTED",
-          statusCode,
-          searchAvailable: true,
-        };
-      }
-
-      if (statusCode === 401 || statusCode === 403) {
-        return {
-          status: "FAILED",
-          statusCode,
-          searchAvailable: false,
-          error: `Authentication failed (HTTP ${statusCode}): Invalid or expired TAVILY_API_KEY.`,
-        };
-      }
-
-      if (statusCode === 429) {
-        return {
-          status: "RATE_LIMITED",
-          statusCode,
-          searchAvailable: false,
-          error: "Tavily search endpoint rate limited (HTTP 429).",
-        };
-      }
-
-      return {
-        status: "FAILED",
-        statusCode,
-        searchAvailable: false,
-        error: `Tavily search service returned HTTP ${statusCode}.`,
-      };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return {
-        status: "FAILED",
-        error: `Tavily search connection failed: ${msg}`,
-      };
-    } finally {
-      if (searchTimeoutId) clearTimeout(searchTimeoutId);
-    }
-  }
-
-  // 2. Cooldown Guard for /usage endpoint to prevent triggering HTTP 429 throttling
+  // 1. Cooldown Guard for /usage endpoint to prevent triggering HTTP 429 throttling
   const now = Date.now();
   if (
     !bypassCooldown &&
@@ -468,7 +405,6 @@ export async function checkTavily(
 
 export interface GetStatusOptions {
   forceRefresh?: boolean;
-  verifySearch?: boolean;
   verifyInference?: boolean;
   clientTavilyVerified?: string | null;
   clientNebiusVerified?: string | null;
@@ -476,9 +412,9 @@ export interface GetStatusOptions {
 
 export async function getSystemStatus(options: GetStatusOptions = {}): Promise<{ response: SystemStatusResponse; cached: boolean }> {
   const now = Date.now();
-  const { forceRefresh = false, verifySearch = false, verifyInference = false, clientTavilyVerified, clientNebiusVerified } = options;
+  const { forceRefresh = false, verifyInference = false, clientTavilyVerified, clientNebiusVerified } = options;
 
-  if (!forceRefresh && !verifySearch && !verifyInference && cachedStatus && now - cachedStatus.timestamp < CACHE_TTL_MS) {
+  if (!forceRefresh && !verifyInference && cachedStatus && now - cachedStatus.timestamp < CACHE_TTL_MS) {
     return { response: cachedStatus.data, cached: true };
   }
 
@@ -487,10 +423,10 @@ export async function getSystemStatus(options: GetStatusOptions = {}): Promise<{
   const nebiusBaseUrl = (process.env.NEBIUS_BASE_URL || "https://api.tokenfactory.nebius.com/v1").replace(/\/+$/, "");
   const configuredModel = process.env.NEBIUS_MODEL?.trim() || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
 
-  // Execute checks in parallel
+  // Execute checks in parallel without unprotected search operations
   const [nebiusResult, tavilyResult] = await Promise.all([
     checkNebius(nebiusKey, nebiusBaseUrl, configuredModel, clientNebiusVerified, verifyInference),
-    checkTavily(tavilyKey, verifySearch, clientTavilyVerified, forceRefresh),
+    checkTavily(tavilyKey, clientTavilyVerified, forceRefresh),
   ]);
 
   const response: SystemStatusResponse = {

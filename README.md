@@ -187,16 +187,76 @@ The **Run & Cost Passport** provides an enterprise-ready audit manifest for clou
 
 ---
 
-## 8. Test Suite & Verification Results
+## 8. Cloudflare Turnstile Verification & Security Guardrails
 
-VARANASI is backed by 38 automated unit tests covering all deterministic logic:
+To protect expensive GPU model inference and third-party search quotas from automated scraping, credential abuse, and denial-of-wallet attacks, VARANASI implements defense-in-depth security guardrails:
+
+```
+[Client Interaction] -> [Turnstile Widget] -> [Acquire Token]
+                                                      |
+                                                      v
+[POST /api/diagnose | /api/tavily-search] -> [Zod Schema Validation]
+                                                      |
+                                                      v
+                                        [Server-Side Rate Limiter] (Sliding Window / Upstash)
+                                                      |
+                                                      v
+                                     [Cloudflare Siteverify Endpoint]
+                                       - Bounded 8s Abort Timeout
+                                       - Fail-Closed Policy (503)
+                                       - Action Binding (varanasi_*)
+                                       - Hostname Whitelist Verification
+                                                      |
+                                            +---------+---------+
+                                            | (Pass)            | (Fail / Bypass)
+                                            v                   v
+                               [Nebius & Tavily Clients]   [HTTP 400 / 403 / 429 / 503]
+```
+
+### Protected vs Deterministic Endpoints
+- **Protected Endpoints** (Require Cloudflare Turnstile token + Rate Limiting):
+  - `POST /api/diagnose`: Guarded before executing Nebius NVIDIA Nemotron inference and Tavily search.
+  - `POST /api/tavily-search`: Guarded before executing live technical searches against Tavily.
+- **Deterministic & Local Endpoints** (Zero third-party quota risk; run locally):
+  - `GET /api/status`: Lightweight token factory model reachability and Tavily key/usage checks; never executes searches or consumes search credits during polling.
+  - `POST /api/preflight`: 100% deterministic local AST parsing and static rule checks for Dockerfiles and cluster configs.
+  - `POST /api/finops/calculate`: 100% deterministic financial math and pricing comparisons.
+  - `POST /api/passport`: Deterministic SHA-256 seal compilation and manifest assembly.
+
+### Security Architecture Highlights
+1. **Fail-Closed Verification**: In production, if `TURNSTILE_SECRET_KEY` is not configured on the server, protected routes immediately reject requests with HTTP 503 and never proceed to call Nebius or Tavily.
+2. **Action Binding**: Verifies that tokens acquired for diagnosis (`action: "varanasi_diagnose"`) cannot be replayed for search (`action: "varanasi_search"`).
+3. **Hostname Whitelisting**: Through `TURNSTILE_ALLOWED_HOSTNAMES`, ensures tokens originated strictly from authorized deployment domains (e.g. `varanasi-nvidia-x-nebius.vercel.app`, `localhost`), rejecting stolen or foreign tokens.
+4. **Bounded Abort Timeout**: All siteverify requests feature an 8-second timeout via `AbortController`, preventing upstream hangs.
+5. **Zero Secret Leakage**: Server secrets (`TURNSTILE_SECRET_KEY`, `NEBIUS_API_KEY`, `TAVILY_API_KEY`) are strictly confined to server-side routes and never exposed to the client bundle or logs.
+6. **Multi-Tier Rate Limiting**:
+   - `/api/diagnose`: 10 requests / minute per IP.
+   - `/api/tavily-search`: 15 requests / minute per IP.
+   - In-memory sliding window fallback with clean integration hooks for distributed Upstash Redis / Vercel KV (`UPSTASH_REDIS_REST_URL`).
+
+### Official Cloudflare Testing Keys
+For local development, staging, or automated CI/CD runs without solving interactive CAPTCHAs, Cloudflare provides official dummy keys:
+- **Always Passes**:
+  - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: `1x00000000000000000000AA`
+  - `TURNSTILE_SECRET_KEY`: `1x0000000000000000000000000000000AA`
+- **Always Blocks**:
+  - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: `2x00000000000000000000AB`
+  - `TURNSTILE_SECRET_KEY`: `2x0000000000000000000000000000000AA`
+
+---
+
+## 9. Test Suite & Verification Results
+
+VARANASI is backed by 58 automated unit tests across 8 test suites covering deterministic logic, security guardrails, and external provider isolation:
 
 ```bash
 npm test
 ```
 
 ### Verified Test Suites:
-- `src/__tests__/status.test.ts` (9 tests): Status state machine, cold starts, client timestamps, `verifyInference` probe, and 429 throttling handling.
+- `src/__tests__/turnstile.test.ts` (10 tests): Cloudflare siteverify validation, fail-closed policy on missing secrets, hostname whitelisting, action binding, token expiration/reuse handling, bounded timeouts, and upstream network error recovery.
+- `src/__tests__/protected-routes.test.ts` (10 tests): Route-level token enforcement on `/api/diagnose` and `/api/tavily-search`, verifying that Nebius and Tavily are never invoked on unverified requests, and server-side rate-limit thresholds.
+- `src/__tests__/status.test.ts` (9 tests): Status state machine, cold starts, client timestamps, `verifyInference` probe, and decoupling search execution from status polling.
 - `src/__tests__/finops.test.ts` (9 tests): GPU cost formulas, instance-hour conversion, On-Demand vs Preemptible rates, token pricing, waste detection.
 - `src/__tests__/preflight.test.ts` (10 tests): Dockerfile checks, PyTorch/CUDA compatibility, `/dev/shm` shared memory checks, CUDA OOM log parsing, VRAM estimation.
 - `src/__tests__/passport.test.ts` (2 tests): Passport schema assembly, audit trail recording, secret exclusion, SHA-256 integrity hash verification, standalone HTML export.
@@ -205,7 +265,7 @@ npm test
 
 ---
 
-## 9. Quickstart & Deployment
+## 10. Quickstart & Deployment
 
 ### Local Development
 ```bash
@@ -218,9 +278,9 @@ npm install
 
 # 3. Configure environment
 cp .env.example .env.local
-# Set NEBIUS_API_KEY and TAVILY_API_KEY in .env.local
+# Set NEBIUS_API_KEY, TAVILY_API_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY, and TURNSTILE_SECRET_KEY
 
-# 4. Run test suite
+# 4. Run test suite (all 58 tests must pass)
 npm test
 
 # 5. Start development server
@@ -240,6 +300,6 @@ vercel --prod --yes
 
 ---
 
-## 10. License
+## 11. License
 
 Licensed under the [MIT License](LICENSE). Built for the Nebius × NVIDIA Global AI Hackathon 2026.
