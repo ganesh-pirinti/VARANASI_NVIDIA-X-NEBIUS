@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
 import { DashboardTab } from "@/components/tabs/DashboardTab";
 import { RunGuardTab } from "@/components/tabs/RunGuardTab";
@@ -87,33 +87,58 @@ export default function Home() {
   const [isLoadingFinops, setIsLoadingFinops] = useState(false);
   const [isLoadingPassport, setIsLoadingPassport] = useState(false);
   const [isReverifying, setIsReverifying] = useState(false);
+  const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
 
-  // Fetch system status on mount
-  useEffect(() => {
-    fetch("/api/status")
-      .then((res) => res.json())
-      .then((data: SystemStatusResponse) => {
-        setSystemStatus(data);
-        if (data.nebiusModel) {
-          setBaselineModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
-          setProposedModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
-        }
-      })
-      .catch(() => {
-        // Fallback default
-        setSystemStatus({
-          nebiusConfigured: false,
-          nebiusStatus: "UNKNOWN",
-          nebiusBaseUrl: "https://api.tokenfactory.nebius.com/v1",
-          nebiusModel: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
-          nebiusModelAvailable: false,
-          tavilyConfigured: false,
-          tavilyStatus: "UNKNOWN",
-          appVersion: "1.0.0",
-          environment: "production",
-        });
+  // Fetch system status with active caching & on-demand refresh support
+  const fetchStatus = useCallback(async (refresh = false) => {
+    if (refresh) setIsRefreshingStatus(true);
+    try {
+      const url = refresh ? "/api/status?refresh=true" : "/api/status";
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Status check returned ${res.status}`);
+      const data: SystemStatusResponse = await res.json();
+      setSystemStatus(data);
+      if (data.nebiusModel) {
+        setBaselineModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+        setProposedModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+      }
+    } catch {
+      setSystemStatus((prev) => prev || {
+        nebiusConfigured: false,
+        nebiusStatus: "UNKNOWN",
+        nebiusBaseUrl: "https://api.tokenfactory.nebius.com/v1",
+        nebiusModel: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+        nebiusModelAvailable: false,
+        tavilyConfigured: false,
+        tavilyStatus: "UNKNOWN",
+        appVersion: "1.0.0",
+        environment: "production",
       });
+    } finally {
+      if (refresh) setIsRefreshingStatus(false);
+    }
   }, []);
+
+  // Poll system status on mount, periodically every 30s, and when browser tab regains focus
+  useEffect(() => {
+    fetchStatus();
+
+    const intervalId = setInterval(() => {
+      fetchStatus();
+    }, 30000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchStatus();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [fetchStatus]);
 
   // Handle demo fixture selection
   const handleSelectFixture = (fixture: DemoFixture) => {
@@ -255,6 +280,7 @@ export default function Home() {
 
       const data: DiagnoseResponse = await res.json();
       setDiagnoseResult(data);
+      fetchStatus(true);
 
       if (data.suggestedPatch) {
         setProposedPatch({
@@ -408,6 +434,8 @@ export default function Home() {
         systemStatus={systemStatus}
         onSelectFixture={handleSelectFixture}
         loadedFixture={loadedFixture}
+        onRefreshStatus={() => fetchStatus(true)}
+        isRefreshingStatus={isRefreshingStatus}
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -446,6 +474,8 @@ export default function Home() {
             isLoading={isLoadingDiagnose}
             systemStatus={systemStatus}
             setActiveTab={setActiveTab}
+            onRefreshStatus={() => fetchStatus(true)}
+            isRefreshingStatus={isRefreshingStatus}
           />
         )}
 

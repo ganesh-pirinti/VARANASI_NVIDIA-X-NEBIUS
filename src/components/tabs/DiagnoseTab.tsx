@@ -9,6 +9,7 @@ import {
   CheckCircle2, 
   ShieldAlert, 
   RefreshCw,
+  RotateCw,
   Info
 } from "lucide-react";
 import { DiagnoseResponse } from "@/types/api";
@@ -21,6 +22,8 @@ interface DiagnoseTabProps {
   isLoading: boolean;
   systemStatus: SystemStatusResponse | null;
   setActiveTab: (tab: string) => void;
+  onRefreshStatus?: () => void;
+  isRefreshingStatus?: boolean;
 }
 
 export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
@@ -29,6 +32,8 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
   isLoading,
   systemStatus,
   setActiveTab,
+  onRefreshStatus,
+  isRefreshingStatus = false,
 }) => {
   return (
     <div className="space-y-6 animate-fade-in">
@@ -56,7 +61,22 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
         </div>
 
         {/* Integration Status Checks */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-mono text-text-secondary">
+            <span className="uppercase tracking-wider font-semibold">Live Integration Health &amp; Reachability</span>
+            {onRefreshStatus && (
+              <button
+                onClick={onRefreshStatus}
+                disabled={isRefreshingStatus}
+                className="flex items-center gap-1.5 text-nvidia-dark hover:text-nvidia-hover font-sans text-[12px] font-semibold transition disabled:opacity-50"
+                title="Verify real-time API reachability"
+              >
+                <RotateCw className={`h-3 w-3 ${isRefreshingStatus ? "animate-spin text-nvidia-green" : ""}`} />
+                <span>{isRefreshingStatus ? "Pinging APIs..." : "Ping APIs"}</span>
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
           <div className="rounded-[8px] border border-border-subtle bg-surface-secondary p-4 flex items-center justify-between">
             <div>
               <div className="text-[11px] uppercase text-text-secondary font-sans font-semibold">Nebius Token Factory</div>
@@ -122,6 +142,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           </div>
         </div>
       </div>
+    </div>
 
       {/* Honest Empty State / Missing Credentials Guidance */}
       {!diagnoseResult && !isLoading && (

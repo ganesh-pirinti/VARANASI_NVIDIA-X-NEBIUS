@@ -11,7 +11,8 @@ import {
   ChevronDown,
   Layers,
   FlaskConical,
-  XCircle
+  XCircle,
+  RotateCw
 } from "lucide-react";
 import { SystemStatusResponse, IntegrationState } from "@/types/api";
 import { DEMO_FIXTURES, DemoFixture } from "@/lib/fixtures/demo-workloads";
@@ -22,6 +23,8 @@ interface NavbarProps {
   systemStatus: SystemStatusResponse | null;
   onSelectFixture: (fixture: DemoFixture) => void;
   loadedFixture?: DemoFixture | null;
+  onRefreshStatus?: () => void;
+  isRefreshingStatus?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -30,6 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   systemStatus,
   onSelectFixture,
   loadedFixture,
+  onRefreshStatus,
+  isRefreshingStatus = false,
 }) => {
   const [showFixtureMenu, setShowFixtureMenu] = useState(false);
 
@@ -177,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* API Health Pills */}
-          <div className="hidden md:flex items-center gap-2.5 border-l border-border-subtle pl-3">
+          <div className="hidden md:flex items-center gap-2 border-l border-border-subtle pl-3">
             {renderStatusPill(
               "Nebius",
               systemStatus?.nebiusStatus,
@@ -188,6 +193,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               "Tavily",
               systemStatus?.tavilyStatus,
               systemStatus?.tavilyError
+            )}
+            {onRefreshStatus && (
+              <button
+                onClick={onRefreshStatus}
+                disabled={isRefreshingStatus}
+                className="p-1 rounded-[4px] text-text-muted hover:text-nvidia-dark hover:bg-nvidia-surface border border-transparent hover:border-nvidia-green/30 transition-all duration-150 disabled:opacity-50"
+                title="Refresh API connectivity status"
+              >
+                <RotateCw className={`h-3 w-3 ${isRefreshingStatus ? "animate-spin text-nvidia-green" : ""}`} />
+              </button>
             )}
           </div>
         </div>
