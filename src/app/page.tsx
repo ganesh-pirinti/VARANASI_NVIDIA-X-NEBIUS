@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { DashboardTab } from "@/components/tabs/DashboardTab";
 import { RunGuardTab } from "@/components/tabs/RunGuardTab";
@@ -20,7 +20,17 @@ import { generateRunCostPassport } from "@/lib/passport/generator";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
-  const [systemStatus, setSystemStatus] = useState<SystemStatusResponse | null>(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatusResponse>({
+    nebiusConfigured: false,
+    nebiusStatus: "CHECKING",
+    nebiusBaseUrl: "https://api.tokenfactory.nebius.com/v1",
+    nebiusModel: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    nebiusModelAvailable: false,
+    tavilyConfigured: false,
+    tavilyStatus: "CHECKING",
+    appVersion: "1.0.0",
+    environment: "production",
+  });
 
   // RunGuard Inputs
   const [inputs, setInputs] = useState<PreflightInputs>({
@@ -89,47 +99,57 @@ export default function Home() {
   const [isReverifying, setIsReverifying] = useState(false);
   const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
 
-  // Fetch system status with active caching & on-demand refresh support
-  const fetchStatus = useCallback(async (refresh = false) => {
-    if (refresh) setIsRefreshingStatus(true);
+  const statusRequestIdRef = useRef(0);
+
+  // Fetch system status with active caching, sequence tracking & on-demand refresh support
+  const fetchStatus = useCallback(async (bypassCache = false) => {
+    const currentRequestId = ++statusRequestIdRef.current;
+    if (bypassCache) setIsRefreshingStatus(true);
+
     try {
-      const url = refresh ? "/api/status?refresh=true" : "/api/status";
+      const url = bypassCache ? "/api/status?refresh=true" : "/api/status";
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`Status check returned ${res.status}`);
       const data: SystemStatusResponse = await res.json();
-      setSystemStatus(data);
-      if (data.nebiusModel) {
-        setBaselineModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
-        setProposedModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+
+      // Guard against race conditions: prevent slower/older response from overwriting newer one
+      if (currentRequestId === statusRequestIdRef.current) {
+        setSystemStatus(data);
+        if (data.nebiusModel) {
+          setBaselineModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+          setProposedModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+        }
       }
     } catch {
-      setSystemStatus((prev) => prev || {
-        nebiusConfigured: false,
-        nebiusStatus: "UNKNOWN",
-        nebiusBaseUrl: "https://api.tokenfactory.nebius.com/v1",
-        nebiusModel: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
-        nebiusModelAvailable: false,
-        tavilyConfigured: false,
-        tavilyStatus: "UNKNOWN",
-        appVersion: "1.0.0",
-        environment: "production",
-      });
+      if (currentRequestId === statusRequestIdRef.current) {
+        setSystemStatus((prev) => ({
+          ...prev,
+          nebiusStatus: prev.nebiusConfigured ? prev.nebiusStatus : "FAILED",
+          tavilyStatus: prev.tavilyConfigured ? prev.tavilyStatus : "FAILED",
+          nebiusError: prev.nebiusError || "Connection timed out or network probe failed",
+          tavilyError: prev.tavilyError || "Connection timed out or network probe failed",
+        }));
+      }
     } finally {
-      if (refresh) setIsRefreshingStatus(false);
+      if (bypassCache && currentRequestId === statusRequestIdRef.current) {
+        setIsRefreshingStatus(false);
+      }
     }
   }, []);
 
   // Poll system status on mount, periodically every 30s, and when browser tab regains focus
   useEffect(() => {
-    fetchStatus();
+    // Automatically perform a fresh status check when app first opens (bypassing stale cache)
+    fetchStatus(true);
 
+    // Keep polling at a reasonable 30s interval
     const intervalId = setInterval(() => {
-      fetchStatus();
+      fetchStatus(false);
     }, 30000);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        fetchStatus();
+        fetchStatus(false);
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);

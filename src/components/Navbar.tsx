@@ -47,9 +47,46 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: "passport", label: "Run & Cost Passport", icon: FileText },
   ];
 
-  const renderStatusPill = (label: string, status?: IntegrationState, error?: string, model?: string) => {
+  const renderStatusPill = (
+    label: string, 
+    status?: IntegrationState, 
+    error?: string, 
+    model?: string,
+    isStale?: boolean,
+    staleTimestamp?: string
+  ) => {
+    // Show CHECKING while first status request is pending
+    if (!status || status === "CHECKING") {
+      return (
+        <div
+          className="flex items-center gap-1.5 text-[11px] font-mono bg-[#FEF3C7] text-status-warning px-2 py-0.5 rounded-[4px] border border-status-warning/30"
+          title={`Checking ${label} connectivity...`}
+        >
+          <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse" />
+          <span className="text-text-muted">{label}:</span>
+          <span className="font-semibold text-status-warning">Checking</span>
+        </div>
+      );
+    }
+
     switch (status) {
       case "CONNECTED":
+        if (isStale) {
+          const timeStr = staleTimestamp ? new Date(staleTimestamp).toLocaleTimeString() : "";
+          return (
+            <div
+              className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-[#FEF3C7] text-text-primary px-2 py-0.5 rounded-[4px] border border-status-warning/40 shadow-sm"
+              title={`${label} Connected (STALE: verified at ${timeStr}). ${error || ""}`}
+            >
+              <span className="h-2 w-2 rounded-full bg-status-warning" />
+              <span className="text-text-secondary">{label}:</span>
+              <span className="font-semibold text-text-primary">Connected</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider bg-white px-1 rounded text-status-warning border border-status-warning/30">
+                Stale
+              </span>
+            </div>
+          );
+        }
         return (
           <div
             className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-nvidia-surface text-nvidia-dark px-2 py-0.5 rounded-[4px] border border-nvidia-green/30"
@@ -69,17 +106,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="h-2 w-2 rounded-full bg-text-muted" />
             <span className="text-text-muted">{label}:</span>
             <span className="font-semibold text-text-primary">Configured</span>
-          </div>
-        );
-      case "CHECKING":
-        return (
-          <div
-            className="flex items-center gap-1.5 text-[11px] font-mono bg-[#FEF3C7] text-status-warning px-2 py-0.5 rounded-[4px] border border-status-warning/30"
-            title={`Checking ${label} connectivity...`}
-          >
-            <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse" />
-            <span className="text-text-muted">{label}:</span>
-            <span className="font-semibold text-status-warning">Checking</span>
           </div>
         );
       case "FAILED":
@@ -187,12 +213,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               "Nebius",
               systemStatus?.nebiusStatus,
               systemStatus?.nebiusError,
-              systemStatus?.nebiusModel
+              systemStatus?.nebiusModel,
+              systemStatus?.nebiusIsStale,
+              systemStatus?.nebiusStaleTimestamp
             )}
             {renderStatusPill(
               "Tavily",
               systemStatus?.tavilyStatus,
-              systemStatus?.tavilyError
+              systemStatus?.tavilyError,
+              undefined,
+              systemStatus?.tavilyIsStale,
+              systemStatus?.tavilyStaleTimestamp
             )}
             {onRefreshStatus && (
               <button

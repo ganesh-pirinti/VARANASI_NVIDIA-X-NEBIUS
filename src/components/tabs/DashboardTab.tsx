@@ -294,15 +294,23 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               <span
                 className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] transition-all duration-200 ${
                   systemStatus?.nebiusStatus === "CONNECTED"
-                    ? "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
+                    ? systemStatus.nebiusIsStale
+                      ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
+                      : "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
+                    : systemStatus?.nebiusStatus === "CHECKING" || !systemStatus
+                    ? "bg-[#FEF3C7] text-status-warning border border-status-warning/30 animate-pulse"
                     : systemStatus?.nebiusStatus === "CONFIGURED"
                     ? "bg-surface-secondary text-text-secondary border border-border-standard"
                     : systemStatus?.nebiusStatus === "FAILED"
                     ? "bg-[#FEE2E2] text-status-error border border-status-error/30"
-                    : "bg-[#FEF3C7] text-status-warning border border-status-warning/30"
+                    : "bg-surface-secondary text-text-muted border border-border-standard"
                 }`}
               >
-                {systemStatus?.nebiusStatus || "NOT CONFIGURED"}
+                {!systemStatus || systemStatus.nebiusStatus === "CHECKING"
+                  ? "CHECKING..."
+                  : systemStatus.nebiusStatus === "CONNECTED" && systemStatus.nebiusIsStale
+                  ? "CONNECTED (STALE)"
+                  : systemStatus.nebiusStatus}
               </span>
             </div>
             <div>
@@ -324,15 +332,23 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               <span
                 className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] transition-all duration-200 ${
                   systemStatus?.tavilyStatus === "CONNECTED"
-                    ? "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
+                    ? systemStatus.tavilyIsStale
+                      ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
+                      : "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
+                    : systemStatus?.tavilyStatus === "CHECKING" || !systemStatus
+                    ? "bg-[#FEF3C7] text-status-warning border border-status-warning/30 animate-pulse"
                     : systemStatus?.tavilyStatus === "CONFIGURED"
                     ? "bg-surface-secondary text-text-secondary border border-border-standard"
                     : systemStatus?.tavilyStatus === "FAILED"
                     ? "bg-[#FEE2E2] text-status-error border border-status-error/30"
-                    : "bg-[#FEF3C7] text-status-warning border border-status-warning/30"
+                    : "bg-surface-secondary text-text-muted border border-border-standard"
                 }`}
               >
-                {systemStatus?.tavilyStatus || "NOT CONFIGURED"}
+                {!systemStatus || systemStatus.tavilyStatus === "CHECKING"
+                  ? "CHECKING..."
+                  : systemStatus.tavilyStatus === "CONNECTED" && systemStatus.tavilyIsStale
+                  ? "CONNECTED (STALE)"
+                  : systemStatus.tavilyStatus}
               </span>
             </div>
 

@@ -136,13 +136,92 @@ describe("System Status API Route (/api/status)", () => {
     const data = await res.json();
 
     expect(data.nebiusStatus).toBe("FAILED");
-    expect(data.nebiusError).toContain("Authentication failed (401)");
+    expect(data.nebiusError).toContain("Authentication failed (HTTP 401)");
     expect(data.tavilyStatus).toBe("FAILED");
-    expect(data.tavilyError).toContain("Authentication failed (403)");
+    expect(data.tavilyError).toContain("Authentication failed (HTTP 403)");
 
     // Crucial safety check: secrets must NEVER be present anywhere in the output
     const jsonStr = JSON.stringify(data);
     expect(jsonStr).not.toContain(sensitiveNebiusSecret);
     expect(jsonStr).not.toContain(sensitiveTavilySecret);
+  });
+
+  it("handles HTTP 429 Rate Limit by retaining STALE connection if previously verified", async () => {
+    process.env.NEBIUS_API_KEY = "mock-nebius-key";
+    process.env.TAVILY_API_KEY = "tvly-mock-key";
+    process.env.NEBIUS_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
+
+    // Step 1: Initial successful verification
+    global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("nebius.com")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: [{ id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B" }] }),
+        });
+      }
+      if (urlStr.includes("tavily.com")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ key: { usage: 1 } }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
+    const initialRes = await GET(new NextRequest("http://localhost:3000/api/status?refresh=true"));
+    const initialData = await initialRes.json();
+    expect(initialData.tavilyStatus).toBe("CONNECTED");
+    expect(initialData.tavilyIsStale).toBeFalsy();
+
+    // Step 2: Next check triggers 429 Rate Limit from Tavily
+    global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("nebius.com")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: [{ id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B" }] }),
+        });
+      }
+      if (urlStr.includes("tavily.com")) {
+        return Promise.resolve({
+          ok: false,
+          status: 429,
+          json: async () => ({ detail: { error: "Your request has been blocked due to excessive requests." } }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
+    const throttledRes = await GET(new NextRequest("http://localhost:3000/api/status?refresh=true"));
+    const throttledData = await throttledRes.json();
+
+    // Must retain CONNECTED status labelled STALE with timestamp
+    expect(throttledData.tavilyStatus).toBe("CONNECTED");
+    expect(throttledData.tavilyIsStale).toBe(true);
+    expect(throttledData.tavilyStaleTimestamp).toBeDefined();
+    expect(throttledData.tavilyStatusCode).toBe(429);
+    expect(throttledData.tavilyError).toContain("HTTP 429");
+  });
+
+  it("handles network timeout gracefully without crashing", async () => {
+    process.env.NEBIUS_API_KEY = "mock-nebius-key";
+    process.env.TAVILY_API_KEY = "tvly-mock-key";
+
+    global.fetch = vi.fn().mockImplementation(() => {
+      const err = new Error("The operation was aborted due to timeout");
+      err.name = "AbortError";
+      return Promise.reject(err);
+    });
+
+    const res = await GET(new NextRequest("http://localhost:3000/api/status?refresh=true"));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.nebiusError).toContain("timed out");
+    expect(data.tavilyError).toContain("timed out");
   });
 });

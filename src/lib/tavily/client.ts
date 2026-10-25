@@ -38,9 +38,10 @@ export async function executeTavilySearch(
     };
   }
 
+  let timeoutId: NodeJS.Timeout | null = null;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+    timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
     const response = await fetch(TAVILY_ENDPOINT, {
       method: "POST",
@@ -64,8 +65,6 @@ export async function executeTavilySearch(
       }),
       signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
@@ -91,8 +90,12 @@ export async function executeTavilySearch(
       relevanceScore: r.score,
     }));
 
-    const globalAny = globalThis as unknown as { __tavilyLastVerified?: { success: boolean; error?: string; timestamp: number } };
+    const globalAny = globalThis as unknown as { 
+      __tavilyLastVerified?: { success: boolean; error?: string; timestamp: number };
+      __lastKnownTavilySuccess?: number;
+    };
     globalAny.__tavilyLastVerified = { success: true, timestamp: Date.now() };
+    globalAny.__lastKnownTavilySuccess = Date.now();
 
     return {
       success: true,
@@ -111,5 +114,7 @@ export async function executeTavilySearch(
       isFallback: false,
       error: `Tavily API search execution failed: ${errorMsg}`,
     };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }

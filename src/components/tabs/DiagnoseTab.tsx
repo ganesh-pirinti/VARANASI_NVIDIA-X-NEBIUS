@@ -81,17 +81,27 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
             <div>
               <div className="text-[11px] uppercase text-text-secondary font-sans font-semibold">Nebius Token Factory</div>
               <div className="text-text-primary mt-1 font-semibold text-[13px]">
-                {systemStatus?.nebiusStatus === "CONNECTED" ? (
-                  <span className="text-nvidia-dark flex items-center gap-1.5 font-sans">
-                    <CheckCircle2 className="h-4 w-4 text-nvidia-green" />
-                    Connected ({systemStatus.nebiusModel})
+                {!systemStatus || systemStatus.nebiusStatus === "CHECKING" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans">
+                    <RefreshCw className="h-4 w-4 animate-spin text-status-warning" />
+                    Checking Nebius...
                   </span>
-                ) : systemStatus?.nebiusStatus === "CONFIGURED" ? (
-                  <span className="text-text-secondary flex items-center gap-1.5 font-sans">
+                ) : systemStatus.nebiusStatus === "CONNECTED" ? (
+                  <span className="text-nvidia-dark flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
+                    <CheckCircle2 className={`h-4 w-4 ${systemStatus.nebiusIsStale ? "text-status-warning" : "text-nvidia-green"}`} />
+                    <span>Connected ({systemStatus.nebiusModel})</span>
+                    {systemStatus.nebiusIsStale && (
+                      <span className="text-[10px] font-mono font-bold bg-[#FEF3C7] text-status-warning px-1.5 py-0.5 rounded border border-status-warning/30">
+                        STALE ({systemStatus.nebiusStaleTimestamp ? new Date(systemStatus.nebiusStaleTimestamp).toLocaleTimeString() : ""})
+                      </span>
+                    )}
+                  </span>
+                ) : systemStatus.nebiusStatus === "CONFIGURED" ? (
+                  <span className="text-text-secondary flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
                     <CheckCircle2 className="h-4 w-4 text-text-secondary" />
                     Configured ({systemStatus.nebiusModel})
                   </span>
-                ) : systemStatus?.nebiusStatus === "FAILED" ? (
+                ) : systemStatus.nebiusStatus === "FAILED" ? (
                   <span className="text-status-error flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
                     <AlertCircle className="h-4 w-4 text-status-error" />
                     Failed: {systemStatus.nebiusError?.slice(0, 30) || "Auth Error"}...
@@ -113,17 +123,27 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
             <div>
               <div className="text-[11px] uppercase text-text-secondary font-sans font-semibold">Tavily Technical Search</div>
               <div className="text-text-primary mt-1 font-semibold text-[13px]">
-                {systemStatus?.tavilyStatus === "CONNECTED" ? (
-                  <span className="text-nvidia-dark flex items-center gap-1.5 font-sans">
-                    <CheckCircle2 className="h-4 w-4 text-nvidia-green" />
-                    Search Endpoint Live &amp; Verified
+                {!systemStatus || systemStatus.tavilyStatus === "CHECKING" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans">
+                    <RefreshCw className="h-4 w-4 animate-spin text-status-warning" />
+                    Checking Tavily...
                   </span>
-                ) : systemStatus?.tavilyStatus === "CONFIGURED" ? (
-                  <span className="text-text-secondary flex items-center gap-1.5 font-sans">
+                ) : systemStatus.tavilyStatus === "CONNECTED" ? (
+                  <span className="text-nvidia-dark flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
+                    <CheckCircle2 className={`h-4 w-4 ${systemStatus.tavilyIsStale ? "text-status-warning" : "text-nvidia-green"}`} />
+                    <span>Search Endpoint Live &amp; Verified</span>
+                    {systemStatus.tavilyIsStale && (
+                      <span className="text-[10px] font-mono font-bold bg-[#FEF3C7] text-status-warning px-1.5 py-0.5 rounded border border-status-warning/30">
+                        STALE ({systemStatus.tavilyStaleTimestamp ? new Date(systemStatus.tavilyStaleTimestamp).toLocaleTimeString() : ""})
+                      </span>
+                    )}
+                  </span>
+                ) : systemStatus.tavilyStatus === "CONFIGURED" ? (
+                  <span className="text-text-secondary flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
                     <CheckCircle2 className="h-4 w-4 text-text-secondary" />
                     Key Configured (tvly-...)
                   </span>
-                ) : systemStatus?.tavilyStatus === "FAILED" ? (
+                ) : systemStatus.tavilyStatus === "FAILED" ? (
                   <span className="text-status-error flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
                     <AlertCircle className="h-4 w-4 text-status-error" />
                     Failed: {systemStatus.tavilyError?.slice(0, 30) || "Search Error"}...

@@ -52,9 +52,15 @@ export interface SystemStatusResponse {
   nebiusModel: string;
   nebiusModelAvailable: boolean;
   nebiusError?: string;
+  nebiusStatusCode?: number;
+  nebiusIsStale?: boolean;
+  nebiusStaleTimestamp?: string;
   tavilyConfigured: boolean;
   tavilyStatus: IntegrationState;
   tavilyError?: string;
+  tavilyStatusCode?: number;
+  tavilyIsStale?: boolean;
+  tavilyStaleTimestamp?: string;
   appVersion: string;
   environment: string;
   checkedAt?: string;

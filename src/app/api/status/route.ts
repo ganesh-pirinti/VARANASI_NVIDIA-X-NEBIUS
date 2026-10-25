@@ -10,12 +10,24 @@ let cachedStatus: {
   timestamp: number;
 } | null = null;
 
-const CACHE_TTL_MS = 10000; // 10 seconds cache
+const CACHE_TTL_MS = 15000; // 15 seconds cache
+
+interface LastKnownSuccess {
+  timestamp: string; // ISO string
+  modelAvailable?: boolean;
+}
+
+// Retain last known verified connection state across transient errors (e.g. rate limits or timeouts)
+let lastKnownNebiusSuccess: LastKnownSuccess | null = null;
+let lastKnownTavilySuccess: LastKnownSuccess | null = null;
 
 interface ServiceCheckResult {
   status: IntegrationState;
+  statusCode?: number;
   error?: string;
   modelAvailable?: boolean;
+  isStale?: boolean;
+  staleTimestamp?: string;
 }
 
 /**
@@ -28,6 +40,7 @@ async function checkNebius(
   configuredModel: string
 ): Promise<ServiceCheckResult> {
   if (!apiKey || apiKey.length === 0) {
+    lastKnownNebiusSuccess = null;
     return {
       status: "NOT_CONFIGURED",
       error: "NEBIUS_API_KEY is not configured in environment.",
@@ -35,9 +48,10 @@ async function checkNebius(
     };
   }
 
+  let timeoutId: NodeJS.Timeout | null = null;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+    timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
     const res = await fetch(`${baseUrl}/models`, {
       method: "GET",
@@ -49,7 +63,7 @@ async function checkNebius(
       cache: "no-store",
     });
 
-    clearTimeout(timeoutId);
+    const statusCode = res.status;
 
     if (res.ok) {
       const body = await res.json().catch(() => null);
@@ -57,38 +71,102 @@ async function checkNebius(
       const found = models.some((m) => m.id === configuredModel);
 
       if (found) {
+        lastKnownNebiusSuccess = {
+          timestamp: new Date().toISOString(),
+          modelAvailable: true,
+        };
         return {
           status: "CONNECTED",
+          statusCode,
           modelAvailable: true,
         };
       } else {
+        lastKnownNebiusSuccess = {
+          timestamp: new Date().toISOString(),
+          modelAvailable: false,
+        };
         return {
           status: "CONFIGURED",
+          statusCode,
           modelAvailable: false,
-          error: `Connected to Nebius, but '${configuredModel}' was not found in the ${models.length} active models list.`,
+          error: `Connected to Nebius catalogue (HTTP 200), but model '${configuredModel}' was not found in active catalogue (${models.length} models available).`,
         };
       }
-    } else if (res.status === 401 || res.status === 403) {
+    }
+
+    if (statusCode === 401 || statusCode === 403) {
+      lastKnownNebiusSuccess = null; // Invalidate any prior success on explicit authentication rejection
       return {
         status: "FAILED",
+        statusCode,
         modelAvailable: false,
-        error: `Authentication failed (${res.status}): Invalid or expired NEBIUS_API_KEY.`,
-      };
-    } else {
-      return {
-        status: "FAILED",
-        modelAvailable: false,
-        error: `Nebius service returned HTTP ${res.status}.`,
+        error: `Authentication failed (HTTP ${statusCode}): Invalid or expired NEBIUS_API_KEY.`,
       };
     }
+
+    if (statusCode === 429) {
+      const rateLimitError = `Rate limit reached (HTTP 429): Nebius models endpoint throttled.`;
+      if (lastKnownNebiusSuccess) {
+        return {
+          status: "CONNECTED",
+          statusCode,
+          isStale: true,
+          staleTimestamp: lastKnownNebiusSuccess.timestamp,
+          modelAvailable: lastKnownNebiusSuccess.modelAvailable,
+          error: `${rateLimitError} Retaining verified connection (STALE: ${new Date(lastKnownNebiusSuccess.timestamp).toLocaleTimeString()}).`,
+        };
+      }
+      return {
+        status: "FAILED",
+        statusCode,
+        modelAvailable: false,
+        error: rateLimitError,
+      };
+    }
+
+    const serviceError = statusCode >= 500
+      ? `Nebius upstream server error (HTTP ${statusCode}).`
+      : `Nebius service returned HTTP ${statusCode}.`;
+
+    if (lastKnownNebiusSuccess) {
+      return {
+        status: "CONNECTED",
+        statusCode,
+        isStale: true,
+        staleTimestamp: lastKnownNebiusSuccess.timestamp,
+        modelAvailable: lastKnownNebiusSuccess.modelAvailable,
+        error: `${serviceError} Retaining verified connection (STALE: ${new Date(lastKnownNebiusSuccess.timestamp).toLocaleTimeString()}).`,
+      };
+    }
+
+    return {
+      status: "FAILED",
+      statusCode,
+      modelAvailable: false,
+      error: serviceError,
+    };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const isTimeout = msg.includes("aborted") || msg.includes("timeout");
+    const netError = isTimeout ? "Connection timed out (8s limit)" : "Network connection to Nebius failed";
+
+    if (lastKnownNebiusSuccess) {
+      return {
+        status: "CONNECTED",
+        isStale: true,
+        staleTimestamp: lastKnownNebiusSuccess.timestamp,
+        modelAvailable: lastKnownNebiusSuccess.modelAvailable,
+        error: `${netError}. Retaining verified connection (STALE: ${new Date(lastKnownNebiusSuccess.timestamp).toLocaleTimeString()}).`,
+      };
+    }
+
     return {
       status: "FAILED",
       modelAvailable: false,
-      error: isTimeout ? "Connection timed out (6s limit)" : "Network connection to Nebius failed",
+      error: netError,
     };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
@@ -98,15 +176,25 @@ async function checkNebius(
  */
 async function checkTavily(apiKey: string): Promise<ServiceCheckResult> {
   if (!apiKey || apiKey.length === 0) {
+    lastKnownTavilySuccess = null;
     return {
       status: "NOT_CONFIGURED",
       error: "TAVILY_API_KEY is not configured in environment.",
     };
   }
 
+  // Check if global execution recorded a real search query success
+  const globalAny = globalThis as unknown as { __lastKnownTavilySuccess?: number };
+  if (globalAny.__lastKnownTavilySuccess) {
+    lastKnownTavilySuccess = {
+      timestamp: new Date(globalAny.__lastKnownTavilySuccess).toISOString(),
+    };
+  }
+
+  let timeoutId: NodeJS.Timeout | null = null;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+    timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
     // Official Tavily usage / auth endpoint (does not consume search credits)
     const res = await fetch("https://api.tavily.com/usage", {
@@ -119,30 +207,84 @@ async function checkTavily(apiKey: string): Promise<ServiceCheckResult> {
       cache: "no-store",
     });
 
-    clearTimeout(timeoutId);
+    const statusCode = res.status;
 
     if (res.ok) {
+      lastKnownTavilySuccess = {
+        timestamp: new Date().toISOString(),
+      };
       return {
         status: "CONNECTED",
-      };
-    } else if (res.status === 401 || res.status === 403) {
-      return {
-        status: "FAILED",
-        error: `Authentication failed (${res.status}): Invalid or expired TAVILY_API_KEY.`,
-      };
-    } else {
-      return {
-        status: "FAILED",
-        error: `Tavily service returned HTTP ${res.status}.`,
+        statusCode,
       };
     }
+
+    if (statusCode === 401 || statusCode === 403) {
+      lastKnownTavilySuccess = null; // Invalidate any prior success on explicit authentication rejection
+      return {
+        status: "FAILED",
+        statusCode,
+        error: `Authentication failed (HTTP ${statusCode}): Invalid or expired TAVILY_API_KEY.`,
+      };
+    }
+
+    if (statusCode === 429) {
+      const rateLimitError = `Rate limit reached (HTTP 429): Tavily usage endpoint throttled due to request frequency.`;
+      if (lastKnownTavilySuccess) {
+        return {
+          status: "CONNECTED",
+          statusCode,
+          isStale: true,
+          staleTimestamp: lastKnownTavilySuccess.timestamp,
+          error: `${rateLimitError} Retaining verified connection (STALE: ${new Date(lastKnownTavilySuccess.timestamp).toLocaleTimeString()}).`,
+        };
+      }
+      return {
+        status: "FAILED",
+        statusCode,
+        error: `${rateLimitError} Retry in a few minutes.`,
+      };
+    }
+
+    const serviceError = statusCode >= 500
+      ? `Tavily upstream server error (HTTP ${statusCode}).`
+      : `Tavily service returned HTTP ${statusCode}.`;
+
+    if (lastKnownTavilySuccess) {
+      return {
+        status: "CONNECTED",
+        statusCode,
+        isStale: true,
+        staleTimestamp: lastKnownTavilySuccess.timestamp,
+        error: `${serviceError} Retaining verified connection (STALE: ${new Date(lastKnownTavilySuccess.timestamp).toLocaleTimeString()}).`,
+      };
+    }
+
+    return {
+      status: "FAILED",
+      statusCode,
+      error: serviceError,
+    };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     const isTimeout = msg.includes("aborted") || msg.includes("timeout");
+    const netError = isTimeout ? "Connection timed out (8s limit)" : "Network connection to Tavily failed";
+
+    if (lastKnownTavilySuccess) {
+      return {
+        status: "CONNECTED",
+        isStale: true,
+        staleTimestamp: lastKnownTavilySuccess.timestamp,
+        error: `${netError}. Retaining verified connection (STALE: ${new Date(lastKnownTavilySuccess.timestamp).toLocaleTimeString()}).`,
+      };
+    }
+
     return {
       status: "FAILED",
-      error: isTimeout ? "Connection timed out (6s limit)" : "Network connection to Tavily failed",
+      error: netError,
     };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
@@ -177,9 +319,15 @@ export async function GET(req: NextRequest) {
     nebiusModel: configuredModel,
     nebiusModelAvailable: nebiusResult.modelAvailable || false,
     nebiusError: nebiusResult.error,
+    nebiusStatusCode: nebiusResult.statusCode,
+    nebiusIsStale: nebiusResult.isStale,
+    nebiusStaleTimestamp: nebiusResult.staleTimestamp,
     tavilyConfigured: tavilyKey.length > 0,
     tavilyStatus: tavilyResult.status,
     tavilyError: tavilyResult.error,
+    tavilyStatusCode: tavilyResult.statusCode,
+    tavilyIsStale: tavilyResult.isStale,
+    tavilyStaleTimestamp: tavilyResult.staleTimestamp,
     appVersion: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
     environment: process.env.NODE_ENV || "development",
     checkedAt: new Date().toISOString(),

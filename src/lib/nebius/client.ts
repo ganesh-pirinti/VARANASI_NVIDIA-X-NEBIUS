@@ -88,9 +88,10 @@ ${sanitizedConfig ? `--- WORKLOAD CONFIG ---\n${sanitizedConfig}` : ""}
 
 Diagnose the failure and return the JSON schema response.`;
 
+  let timeoutId: NodeJS.Timeout | null = null;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout
+    timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout
 
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
@@ -109,8 +110,6 @@ Diagnose the failure and return the JSON schema response.`;
       }),
       signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errBody = await response.text().catch(() => "");
@@ -158,5 +157,7 @@ Diagnose the failure and return the JSON schema response.`;
       sanitizedTokensProcessed: 0,
       error: `Failed to connect to Nebius Token Factory: ${errorMsg}`,
     };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
