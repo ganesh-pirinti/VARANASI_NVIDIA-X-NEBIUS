@@ -1,4 +1,5 @@
 import { sanitizeText, truncateLogForInference } from "../sanitizer";
+import { NebiusDiagnosticOutputSchema, formatZodError } from "../security/validators";
 
 export interface NebiusDiagnosticPromptInputs {
   diagnosticLog: string;
@@ -130,36 +131,39 @@ Diagnose the failure and return the JSON schema response.`;
     const totalTokens = data.usage?.total_tokens || Math.ceil((userPrompt.length + content.length) / 4);
 
     // Attempt to parse JSON response with resilient pattern matching
-    let parsedResponse;
-    try {
-      let cleanedJson = content.trim();
-      const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-      if (codeBlockMatch) {
-        cleanedJson = codeBlockMatch[1].trim();
-      } else {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          cleanedJson = jsonMatch[0].trim();
-        }
+    let cleanedJson = content.trim();
+    const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (codeBlockMatch) {
+      cleanedJson = codeBlockMatch[1].trim();
+    } else {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanedJson = jsonMatch[0].trim();
       }
-      const rawObj = JSON.parse(cleanedJson);
-      parsedResponse = {
-        likelyRootCause: typeof rawObj.likelyRootCause === "string" ? rawObj.likelyRootCause : content.slice(0, 250),
-        alternativeExplanations: Array.isArray(rawObj.alternativeExplanations) ? rawObj.alternativeExplanations.map(String) : [],
-        actionPlan: Array.isArray(rawObj.actionPlan) ? rawObj.actionPlan.map(String) : [],
-        suggestedPatch: rawObj.suggestedPatch && typeof rawObj.suggestedPatch === "object" ? {
-          targetFile: String(rawObj.suggestedPatch.targetFile || "config.yaml"),
-          originalSnippet: String(rawObj.suggestedPatch.originalSnippet || ""),
-          proposedPatchSnippet: String(rawObj.suggestedPatch.proposedPatchSnippet || ""),
-          explanation: String(rawObj.suggestedPatch.explanation || ""),
-        } : undefined,
-      };
+    }
+
+    let rawObj: unknown;
+    try {
+      rawObj = JSON.parse(cleanedJson);
     } catch {
-      // Fallback if model returned unstructured text
-      parsedResponse = {
-        likelyRootCause: content.slice(0, 250),
-        alternativeExplanations: ["See raw model text for detailed diagnostic notes."],
-        actionPlan: ["Review hardware memory headroom", "Inspect multi-node communication configuration"],
+      return {
+        success: false,
+        modelUsed: model,
+        rawText: content,
+        sanitizedTokensProcessed: totalTokens,
+        error: "Model response was not valid JSON and could not be verified against diagnostic schema.",
+      };
+    }
+
+    // Strictly validate against deterministic Zod schema
+    const validation = NebiusDiagnosticOutputSchema.safeParse(rawObj);
+    if (!validation.success) {
+      return {
+        success: false,
+        modelUsed: model,
+        rawText: content,
+        sanitizedTokensProcessed: totalTokens,
+        error: `Model diagnostic output failed schema validation: ${formatZodError(validation.error)}`,
       };
     }
 
@@ -167,7 +171,7 @@ Diagnose the failure and return the JSON schema response.`;
       success: true,
       modelUsed: model,
       rawText: content,
-      parsedResponse,
+      parsedResponse: validation.data,
       sanitizedTokensProcessed: totalTokens,
     };
   } catch (err: unknown) {

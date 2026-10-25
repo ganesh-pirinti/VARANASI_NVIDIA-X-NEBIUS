@@ -57,7 +57,7 @@ describe("External API Clients Reliability & Failure Modes", () => {
     expect(result.error).toContain("Nebius Token Factory API Error (500 Internal Server Error)");
   });
 
-  it("handles malformed JSON from Nebius inference cleanly without throwing", async () => {
+  it("rejects unstructured or non-JSON output honestly instead of fabricating a diagnosis", async () => {
     process.env.NEBIUS_API_KEY = "test_key_fake";
 
     // Mock global fetch returning plain text instead of requested JSON
@@ -80,9 +80,38 @@ describe("External API Clients Reliability & Failure Modes", () => {
       diagnosticLog: "CUDA error",
     });
 
-    expect(result.success).toBe(true);
-    expect(result.parsedResponse).toBeDefined();
-    expect(result.parsedResponse?.likelyRootCause).toContain("I recommend reducing batch size");
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("could not be verified against diagnostic schema");
+  });
+
+  it("rejects valid JSON when it violates required diagnostic schema constraints", async () => {
+    process.env.NEBIUS_API_KEY = "test_key_fake";
+
+    // Valid JSON but missing required actionPlan and alternativeExplanations arrays
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                likelyRootCause: "Some error",
+                // missing alternativeExplanations & actionPlan
+              }),
+            },
+          },
+        ],
+        usage: { total_tokens: 60 },
+      }),
+    });
+
+    const result = await queryNebiusDiagnostic({
+      diagnosticLog: "CUDA error",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("failed schema validation");
   });
 
   it("extracts JSON embedded inside markdown code blocks and conversational commentary", async () => {

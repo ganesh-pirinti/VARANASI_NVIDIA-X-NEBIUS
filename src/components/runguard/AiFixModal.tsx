@@ -20,6 +20,7 @@ import { Finding, PreflightInputs, ProposedPatch } from "@/types/runguard";
 import { DiagnoseResponse } from "@/types/api";
 import { DiffViewer } from "../ui/DiffViewer";
 import { TurnstileVerification } from "../security/TurnstileVerification";
+import { transitionPatchLifecycle, computePatchContentHash } from "@/lib/runguard/patch-lifecycle";
 
 interface AiFixModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export const AiFixModal: React.FC<AiFixModalProps> = ({
   const [diagnoseResult, setDiagnoseResult] = useState<DiagnoseResponse | null>(null);
   const [activePatch, setActivePatch] = useState<ProposedPatch | null>(null);
   const [patchStatus, setPatchStatus] = useState<"GENERATED" | "APPROVED" | "APPLIED" | "RE_VERIFIED">("GENERATED");
+  const [approvedHash, setApprovedHash] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -174,6 +176,14 @@ export const AiFixModal: React.FC<AiFixModalProps> = ({
 
   const handleApprove = () => {
     if (!activePatch) return;
+    setErrorMessage(null);
+    const transition = transitionPatchLifecycle(activePatch, "APPROVED");
+    if (!transition.valid || !transition.approvedHash) {
+      setErrorMessage(transition.error || "Approval transition rejected.");
+      return;
+    }
+
+    setApprovedHash(transition.approvedHash);
     setActivePatch({
       ...activePatch,
       status: "APPROVED",
@@ -184,6 +194,13 @@ export const AiFixModal: React.FC<AiFixModalProps> = ({
 
   const handleApply = () => {
     if (!activePatch) return;
+    setErrorMessage(null);
+    const transition = transitionPatchLifecycle(activePatch, "APPLIED", { approvedHash: approvedHash || undefined });
+    if (!transition.valid) {
+      setErrorMessage(transition.error || "Apply transition rejected. Please re-approve the patch.");
+      return;
+    }
+
     onApplyPatchToWorkload(activePatch);
     setActivePatch({
       ...activePatch,
@@ -193,14 +210,23 @@ export const AiFixModal: React.FC<AiFixModalProps> = ({
   };
 
   const handleReverifyNow = async () => {
-    await onReverify();
-    if (activePatch) {
-      setActivePatch({
-        ...activePatch,
-        status: "RE_VERIFIED",
-        verifiedAt: new Date().toISOString(),
-      });
-      setPatchStatus("RE_VERIFIED");
+    if (!activePatch) return;
+    setErrorMessage(null);
+    try {
+      await onReverify();
+      const transition = transitionPatchLifecycle(activePatch, "RE_VERIFIED", { deterministicPassed: true });
+      if (transition.valid) {
+        setActivePatch({
+          ...activePatch,
+          status: "RE_VERIFIED",
+          verifiedAt: new Date().toISOString(),
+        });
+        setPatchStatus("RE_VERIFIED");
+      } else {
+        setErrorMessage(transition.error || "Independent checks did not confirm remediation.");
+      }
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Re-verification failed.");
     }
   };
 

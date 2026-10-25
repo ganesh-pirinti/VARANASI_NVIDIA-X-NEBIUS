@@ -5,31 +5,32 @@ import { DiagnoseResponse } from "@/types/api";
 import { DiagnoseRequestSchema, formatZodError } from "@/lib/security/validators";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
+import { readBoundedJson } from "@/lib/security/request-parser";
 
 export async function POST(req: NextRequest) {
   const modelUsed = process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
   const clientIp = getClientIp(req);
 
   try {
-    // 1. Parse and validate JSON payload with deterministic Zod schema
-    let rawBody;
-    try {
-      rawBody = await req.json();
-    } catch {
+    // 1. Parse bounded JSON payload (Max 1MB) with deterministic size enforcement
+    const parsed = await readBoundedJson(req, 1024 * 1024);
+    if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
           modelUsed,
-          likelyRootCause: "Invalid JSON payload in request.",
+          likelyRootCause: parsed.status === 413 ? "Payload size exceeds maximum allowed limit." : "Invalid JSON payload in request.",
           alternativeExplanations: [],
           suggestedActionPlan: [],
           citations: [],
           sanitizedTokensProcessed: 0,
-          error: "Malformed JSON request body.",
+          error: parsed.error || "Invalid request body.",
         },
-        { status: 400 }
+        { status: parsed.status || 400 }
       );
     }
+
+    const rawBody = parsed.data;
 
     const validationResult = DiagnoseRequestSchema.safeParse(rawBody);
     if (!validationResult.success) {
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
     // 2. Server-Side Rate Limiter Guardrail (10 requests per minute per IP)
     const rateLimit = await checkRateLimit(`diagnose:${clientIp}`, 10, 60000);
     if (!rateLimit.allowed) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(rateLimit.resetMs / 1000));
       return NextResponse.json(
         {
           success: false,
@@ -65,7 +67,12 @@ export async function POST(req: NextRequest) {
           sanitizedTokensProcessed: 0,
           error: rateLimit.error || "Rate limit reached. Please wait before retrying.",
         },
-        { status: 429 }
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfterSeconds),
+          },
+        }
       );
     }
 

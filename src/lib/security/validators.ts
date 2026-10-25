@@ -138,6 +138,35 @@ export const PassportRequestSchema = z.object({
 });
 
 /**
+ * Strict Schema for Model-Generated Diagnostic Responses from Nebius / Nemotron.
+ * Prevents trusting unvalidated model outputs.
+ */
+export const NebiusDiagnosticOutputSchema = z.object({
+  likelyRootCause: z
+    .string()
+    .min(5, "Root cause must be at least 5 characters.")
+    .max(1000, "Root cause exceeds maximum length of 1000 characters."),
+  alternativeExplanations: z
+    .array(z.string().min(3).max(500))
+    .min(1, "At least one alternative explanation is required.")
+    .max(10, "Cannot exceed 10 alternative explanations."),
+  actionPlan: z
+    .array(z.string().min(3).max(500))
+    .min(1, "At least one action plan step is required.")
+    .max(10, "Cannot exceed 10 action plan steps."),
+  suggestedPatch: z
+    .object({
+      targetFile: z.string().min(1).max(250),
+      originalSnippet: z.string().max(10000),
+      proposedPatchSnippet: z.string().max(10000),
+      explanation: z.string().max(1000),
+    })
+    .optional(),
+});
+
+export type ValidatedNebiusDiagnosticOutput = z.infer<typeof NebiusDiagnosticOutputSchema>;
+
+/**
  * Helper to format Zod validation errors into a single concise string.
  */
 export function formatZodError(error: z.ZodError): string {

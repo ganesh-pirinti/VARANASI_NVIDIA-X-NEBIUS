@@ -139,19 +139,27 @@ export async function checkRateLimit(
 }
 
 /**
- * Extracts client IP from standard Next.js request headers.
+ * Extracts client IP securely with edge-header priority.
+ * Prefers cf-connecting-ip and x-real-ip over spoofable x-forwarded-for headers.
  */
 export function getClientIp(req: Request): string {
+  const cfConnectingIp = req.headers.get("cf-connecting-ip");
+  if (cfConnectingIp && cfConnectingIp.trim().length > 0) {
+    return cfConnectingIp.trim();
+  }
+
+  const xRealIp = req.headers.get("x-real-ip");
+  if (xRealIp && xRealIp.trim().length > 0) {
+    return xRealIp.trim();
+  }
+
   const xForwardedFor = req.headers.get("x-forwarded-for");
   if (xForwardedFor) {
     const first = xForwardedFor.split(",")[0].trim();
-    if (first) return first;
+    if (first && (/^[\d.]+$/.test(first) || /^[0-9a-fA-F:]+$/.test(first))) {
+      return first;
+    }
   }
-  const xRealIp = req.headers.get("x-real-ip");
-  if (xRealIp) return xRealIp.trim();
-
-  const cfConnectingIp = req.headers.get("cf-connecting-ip");
-  if (cfConnectingIp) return cfConnectingIp.trim();
 
   return "127.0.0.1";
 }

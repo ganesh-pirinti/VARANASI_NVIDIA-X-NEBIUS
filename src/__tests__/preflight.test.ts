@@ -258,7 +258,7 @@ RuntimeError: DataLoader worker (pid 220) is killed by signal: Bus error.`;
       const data = await res.json();
 
       expect(res.status).toBe(413);
-      expect(data.error).toContain("exceeds safe maximum limit");
+      expect(data.error).toContain("exceeds maximum allowed limit");
     });
   });
 });

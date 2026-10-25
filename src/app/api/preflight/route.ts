@@ -1,32 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runPreflightChecks } from "@/lib/preflight/engine";
 import { PreflightRequestSchema, formatZodError } from "@/lib/security/validators";
+import { readBoundedJson } from "@/lib/security/request-parser";
 
 export async function POST(req: NextRequest) {
   try {
-    let rawBody;
-    try {
-      rawBody = await req.json();
-    } catch {
+    const parsed = await readBoundedJson(req, 5 * 1024 * 1024);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Malformed JSON request body." },
-        { status: 400 }
+        { error: parsed.error || "Invalid request body." },
+        { status: parsed.status || 400 }
       );
     }
 
-    // Guard against oversized payload (limit to 5MB)
-    const contentPayloadSize = 
-      (typeof rawBody?.dockerfileContent === "string" ? rawBody.dockerfileContent.length : 0) +
-      (typeof rawBody?.requirementsContent === "string" ? rawBody.requirementsContent.length : 0) +
-      (typeof rawBody?.workloadConfigContent === "string" ? rawBody.workloadConfigContent.length : 0) +
-      (typeof rawBody?.diagnosticLogContent === "string" ? rawBody.diagnosticLogContent.length : 0);
-
-    if (contentPayloadSize > 5 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: "Payload exceeds safe maximum limit of 5MB." },
-        { status: 413 }
-      );
-    }
+    const rawBody = parsed.data;
 
     const validation = PreflightRequestSchema.safeParse(rawBody);
     if (!validation.success) {

@@ -369,6 +369,88 @@ describe("Protected API Routes Security Guardrails", () => {
       expect(rateLimitedRes.status).toBe(429);
       expect(data.success).toBe(false);
       expect(data.error).toContain("Rate limit reached");
+      expect(rateLimitedRes.headers.get("Retry-After")).toBeDefined();
+    });
+
+    it("returns HTTP 413 when search payload exceeds 64KB limit", async () => {
+      const hugeQuery = "A".repeat(70 * 1024);
+
+      const req = new NextRequest("http://localhost:3000/api/tavily-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: hugeQuery,
+          turnstileToken: "valid_token",
+        }),
+      });
+
+      const res = await handleTavilySearch(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(413);
+      expect(data.error).toContain("exceeds maximum allowed limit");
+    });
+  });
+
+  describe("Payload Limits on POST /api/diagnose", () => {
+    it("returns HTTP 413 when diagnostic payload exceeds 1MB ceiling", async () => {
+      const hugeLog = "X".repeat(1.2 * 1024 * 1024);
+
+      const req = new NextRequest("http://localhost:3000/api/diagnose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          diagnosticLog: hugeLog,
+          turnstileToken: "valid_token",
+        }),
+      });
+
+      const res = await handleDiagnose(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(413);
+      expect(data.error).toContain("exceeds maximum allowed limit");
+    });
+
+    it("includes Retry-After header on HTTP 429 rate limit response", async () => {
+      vi.spyOn(turnstileLib, "verifyTurnstileToken").mockResolvedValue({
+        success: true,
+        status: 200,
+      });
+
+      const clientIp = "198.51.100.77";
+
+      for (let i = 0; i < 10; i++) {
+        const req = new NextRequest("http://localhost:3000/api/diagnose", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-forwarded-for": clientIp,
+          },
+          body: JSON.stringify({
+            diagnosticLog: `Log message ${i}`,
+            turnstileToken: `token_${i}`,
+          }),
+        });
+
+        await handleDiagnose(req);
+      }
+
+      const rateLimitedReq = new NextRequest("http://localhost:3000/api/diagnose", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": clientIp,
+        },
+        body: JSON.stringify({
+          diagnosticLog: "Log message 11",
+          turnstileToken: "token_11",
+        }),
+      });
+
+      const rateLimitedRes = await handleDiagnose(rateLimitedReq);
+      expect(rateLimitedRes.status).toBe(429);
+      expect(rateLimitedRes.headers.get("Retry-After")).toBeDefined();
     });
   });
 });

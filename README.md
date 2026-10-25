@@ -227,11 +227,24 @@ To protect expensive GPU model inference and third-party search quotas from auto
 1. **Fail-Closed Verification**: In production, if `TURNSTILE_SECRET_KEY` is not configured on the server, protected routes immediately reject requests with HTTP 503 and never proceed to call Nebius or Tavily.
 2. **Action Binding**: Verifies that tokens acquired for diagnosis (`action: "varanasi_diagnose"`) cannot be replayed for search (`action: "varanasi_search"`).
 3. **Hostname Whitelisting**: Through `TURNSTILE_ALLOWED_HOSTNAMES`, ensures tokens originated strictly from authorized deployment domains (e.g. `varanasi-nvidia-x-nebius.vercel.app`, `localhost`), rejecting stolen or foreign tokens.
-4. **Bounded Abort Timeout**: All siteverify requests feature an 8-second timeout via `AbortController`, preventing upstream hangs.
-5. **Zero Secret Leakage**: Server secrets (`TURNSTILE_SECRET_KEY`, `NEBIUS_API_KEY`, `TAVILY_API_KEY`) are strictly confined to server-side routes and never exposed to the client bundle or logs.
-6. **Multi-Tier Rate Limiting**:
+4. **Bounded Streaming Request Parser**: Enforces byte ceilings while reading streams via `readBoundedJson`, rejecting oversized payloads with `HTTP 413` even when requests use chunked transfer encoding:
+   - `/api/diagnose`: Max 1 MB (1,048,576 bytes)
+   - `/api/tavily-search`: Max 64 KB (65,536 bytes)
+   - `/api/preflight`: Max 5 MB (5,242,880 bytes)
+   - `/api/finops/calculate`: Max 128 KB (131,072 bytes)
+   - `/api/passport`: Max 1 MB (1,048,576 bytes)
+5. **Model-Output Schema Validation**: All responses from Nebius / NVIDIA Nemotron are parsed and validated against `NebiusDiagnosticOutputSchema` before use. Malformed or unstructured model outputs are rejected honestly with a clear error rather than fabricating pseudo-diagnoses.
+6. **Human-Controlled Patch Lifecycle & Content Binding**:
+   - Strictly enforces `GENERATED → APPROVED → APPLIED → RE-VERIFIED`.
+   - Binds human operator approval to the deterministic SHA-256 byte hash of the patch content (`targetFile`, `originalContent`, `patchedContent`).
+   - If patch content is modified after approval, approval is invalidated and must be reviewed again.
+   - Requires independent deterministic preflight checks to pass before transitioning to `RE_VERIFIED`.
+7. **Zero Secret Leakage**: Server secrets (`TURNSTILE_SECRET_KEY`, `NEBIUS_API_KEY`, `TAVILY_API_KEY`) are strictly confined to server-side routes and never exposed to the client bundle or logs.
+8. **Multi-Tier Rate Limiting with Retry-After**:
    - `/api/diagnose`: 10 requests / minute per IP.
    - `/api/tavily-search`: 15 requests / minute per IP.
+   - Includes standard `Retry-After: <seconds>` HTTP response headers on 429 rejections.
+   - Prioritizes trusted edge headers (`cf-connecting-ip`, `x-real-ip`) over client-spoofable headers.
    - In-memory sliding window fallback with clean integration hooks for distributed Upstash Redis / Vercel KV (`UPSTASH_REDIS_REST_URL`).
 
 ### Official Cloudflare Testing Keys
@@ -247,7 +260,7 @@ For local development, staging, or automated CI/CD runs without solving interact
 
 ## 9. Test Suite & Verification Results
 
-VARANASI is backed by 72 automated unit tests across 8 test suites covering deterministic logic, security guardrails, resilient JSON parsing, prompt injection defense, and external provider isolation:
+VARANASI is backed by 83 automated unit tests across 9 test suites covering deterministic logic, security guardrails, patch hash binding, model output validation, resilient JSON parsing, prompt injection defense, and external provider isolation:
 
 ```bash
 npm test
@@ -255,11 +268,12 @@ npm test
 
 ### Verified Test Suites:
 - `src/__tests__/preflight.test.ts` (13 tests): Dockerfile checks, PyTorch/CUDA compatibility, `/dev/shm` shared memory checks, CUDA OOM log parsing, VRAM estimation, 5MB body size limits, and route validation.
+- `src/__tests__/protected-routes.test.ts` (13 tests): Route-level token enforcement on `/api/diagnose` and `/api/tavily-search`, verifying that Nebius and Tavily are never invoked on unverified requests, 1MB and 64KB body ceilings (413), server-side rate limits (429), and `Retry-After` headers.
 - `src/__tests__/finops.test.ts` (12 tests): GPU cost formulas, instance-hour conversion, On-Demand vs Preemptible rates, token pricing, waste detection, numeric bounds, and API route validation.
 - `src/__tests__/turnstile.test.ts` (10 tests): Cloudflare siteverify validation, fail-closed policy on missing secrets, hostname whitelisting, action binding, token expiration/reuse handling, bounded timeouts, and upstream network error recovery.
-- `src/__tests__/protected-routes.test.ts` (10 tests): Route-level token enforcement on `/api/diagnose` and `/api/tavily-search`, verifying that Nebius and Tavily are never invoked on unverified requests, and server-side rate-limit thresholds.
 - `src/__tests__/status.test.ts` (9 tests): Status state machine, cold starts, client timestamps, `verifyInference` probe, and decoupling search execution from status polling.
-- `src/__tests__/external-apis.test.ts` (7 tests): Handling missing keys, network timeouts, conversational markdown JSON extraction, untrusted log isolation within security boundary tags, and explicit Tavily 429 rate limit errors.
+- `src/__tests__/external-apis.test.ts` (8 tests): Handling missing keys, network timeouts, conversational markdown JSON extraction, model schema validation rejection, untrusted log isolation within security boundary tags, and explicit Tavily 429 rate limit errors.
+- `src/__tests__/patch-lifecycle.test.ts` (7 tests): State transitions (`GENERATED → APPROVED → APPLIED → RE-VERIFIED`), SHA-256 patch content hash binding, tampering detection, and deterministic check validation.
 - `src/__tests__/sanitizer.test.ts` (6 tests): Secret masking for Bearer tokens, `sk-...` / `neb-...` keys, credential pairs, Cloudflare keys, JWTs, and database URIs.
 - `src/__tests__/passport.test.ts` (5 tests): Passport schema assembly, audit trail recording, secret exclusion, SHA-256 integrity hash verification, standalone HTML export, and API route validation.
 
@@ -280,7 +294,7 @@ npm install
 cp .env.example .env.local
 # Set NEBIUS_API_KEY, TAVILY_API_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY, and TURNSTILE_SECRET_KEY
 
-# 4. Run test suite (all 72 tests must pass)
+# 4. Run test suite (all 83 tests must pass)
 npm test
 
 # 5. Start development server

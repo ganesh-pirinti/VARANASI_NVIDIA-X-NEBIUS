@@ -4,27 +4,28 @@ import { TavilySearchResponse } from "@/types/api";
 import { TavilySearchRequestSchema, formatZodError } from "@/lib/security/validators";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
+import { readBoundedJson } from "@/lib/security/request-parser";
 
 export async function POST(req: NextRequest) {
   const clientIp = getClientIp(req);
 
   try {
-    // 1. Parse and validate JSON payload with Zod
-    let rawBody;
-    try {
-      rawBody = await req.json();
-    } catch {
+    // 1. Parse bounded JSON payload (Max 64KB) with Zod
+    const parsed = await readBoundedJson(req, 64 * 1024);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, query: "", citations: [], error: "Malformed JSON request body." },
-        { status: 400 }
+        { success: false, query: "", citations: [], error: parsed.error || "Invalid request body." },
+        { status: parsed.status || 400 }
       );
     }
+
+    const rawBody = parsed.data;
 
     const validationResult = TavilySearchRequestSchema.safeParse(rawBody);
     if (!validationResult.success) {
       const errorMsg = formatZodError(validationResult.error);
       return NextResponse.json(
-        { success: false, query: rawBody?.query || "", citations: [], error: errorMsg },
+        { success: false, query: (rawBody as any)?.query || "", citations: [], error: errorMsg },
         { status: 400 }
       );
     }
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
     // 2. Server-Side Rate Limiter Guardrail (15 requests per minute per IP)
     const rateLimit = await checkRateLimit(`tavily:${clientIp}`, 15, 60000);
     if (!rateLimit.allowed) {
+      const retryAfterSeconds = Math.max(1, Math.ceil(rateLimit.resetMs / 1000));
       return NextResponse.json(
         {
           success: false,
@@ -41,7 +43,12 @@ export async function POST(req: NextRequest) {
           citations: [],
           error: rateLimit.error || "Search rate limit exceeded. Please wait before retrying.",
         },
-        { status: 429 }
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfterSeconds),
+          },
+        }
       );
     }
 
