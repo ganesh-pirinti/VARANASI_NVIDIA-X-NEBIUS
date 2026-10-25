@@ -108,6 +108,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="font-semibold text-text-primary">Configured</span>
           </div>
         );
+      case "RATE_LIMITED":
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-[#FEF3C7] text-text-primary px-2 py-0.5 rounded-[4px] border border-status-warning/40 shadow-sm"
+            title={error || `${label} usage endpoint rate limited (HTTP 429). Search queries remain available.`}
+          >
+            <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="font-semibold text-text-primary">Rate Limited</span>
+          </div>
+        );
+      case "DEGRADED":
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-[#FEF3C7] text-text-primary px-2 py-0.5 rounded-[4px] border border-status-warning/40 shadow-sm"
+            title={error || `${label} service degraded.`}
+          >
+            <span className="h-2 w-2 rounded-full bg-status-warning" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="font-semibold text-text-primary">Degraded</span>
+          </div>
+        );
       case "FAILED":
         return (
           <div

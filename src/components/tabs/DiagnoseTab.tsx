@@ -23,6 +23,7 @@ interface DiagnoseTabProps {
   systemStatus: SystemStatusResponse | null;
   setActiveTab: (tab: string) => void;
   onRefreshStatus?: () => void;
+  onVerifySearch?: () => void;
   isRefreshingStatus?: boolean;
 }
 
@@ -33,6 +34,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
   systemStatus,
   setActiveTab,
   onRefreshStatus,
+  onVerifySearch,
   isRefreshingStatus = false,
 }) => {
   return (
@@ -62,19 +64,32 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
 
         {/* Integration Status Checks */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-mono text-text-secondary">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-text-secondary">
             <span className="uppercase tracking-wider font-semibold">Live Integration Health &amp; Reachability</span>
-            {onRefreshStatus && (
-              <button
-                onClick={onRefreshStatus}
-                disabled={isRefreshingStatus}
-                className="flex items-center gap-1.5 text-nvidia-dark hover:text-nvidia-hover font-sans text-[12px] font-semibold transition disabled:opacity-50"
-                title="Verify real-time API reachability"
-              >
-                <RotateCw className={`h-3 w-3 ${isRefreshingStatus ? "animate-spin text-nvidia-green" : ""}`} />
-                <span>{isRefreshingStatus ? "Pinging APIs..." : "Ping APIs"}</span>
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {onVerifySearch && (
+                <button
+                  onClick={onVerifySearch}
+                  disabled={isRefreshingStatus}
+                  className="flex items-center gap-1.5 text-text-secondary hover:text-nvidia-dark font-sans text-[12px] font-semibold transition disabled:opacity-50"
+                  title="Perform a live Tavily search query verification to test full query capability"
+                >
+                  <Search className="h-3 w-3 text-nvidia-green" />
+                  <span>Verify Search Query</span>
+                </button>
+              )}
+              {onRefreshStatus && (
+                <button
+                  onClick={onRefreshStatus}
+                  disabled={isRefreshingStatus}
+                  className="flex items-center gap-1.5 text-nvidia-dark hover:text-nvidia-hover font-sans text-[12px] font-semibold transition disabled:opacity-50"
+                  title="Verify real-time API reachability"
+                >
+                  <RotateCw className={`h-3 w-3 ${isRefreshingStatus ? "animate-spin text-nvidia-green" : ""}`} />
+                  <span>{isRefreshingStatus ? "Pinging APIs..." : "Ping APIs"}</span>
+                </button>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
           <div className="rounded-[8px] border border-border-subtle bg-surface-secondary p-4 flex items-center justify-between">
@@ -100,6 +115,16 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                   <span className="text-text-secondary flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
                     <CheckCircle2 className="h-4 w-4 text-text-secondary" />
                     Configured ({systemStatus.nebiusModel})
+                  </span>
+                ) : systemStatus.nebiusStatus === "RATE_LIMITED" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
+                    <AlertCircle className="h-4 w-4 text-status-warning" />
+                    Rate Limited (HTTP 429)
+                  </span>
+                ) : systemStatus.nebiusStatus === "DEGRADED" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
+                    <AlertCircle className="h-4 w-4 text-status-warning" />
+                    Degraded: {systemStatus.nebiusError?.slice(0, 30)}...
                   </span>
                 ) : systemStatus.nebiusStatus === "FAILED" ? (
                   <span className="text-status-error flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
@@ -142,6 +167,16 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                   <span className="text-text-secondary flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
                     <CheckCircle2 className="h-4 w-4 text-text-secondary" />
                     Key Configured (tvly-...)
+                  </span>
+                ) : systemStatus.tavilyStatus === "RATE_LIMITED" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
+                    <AlertCircle className="h-4 w-4 text-status-warning" />
+                    Rate Limited (HTTP 429) — Search Operational
+                  </span>
+                ) : systemStatus.tavilyStatus === "DEGRADED" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
+                    <AlertCircle className="h-4 w-4 text-status-warning" />
+                    Degraded: {systemStatus.tavilyError?.slice(0, 30)}...
                   </span>
                 ) : systemStatus.tavilyStatus === "FAILED" ? (
                   <span className="text-status-error flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>

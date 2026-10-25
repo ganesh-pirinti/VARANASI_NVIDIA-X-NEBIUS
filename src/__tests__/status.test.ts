@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GET } from "@/app/api/status/route";
+import { _resetStatusCacheForTesting } from "@/lib/status/service";
 import { NextRequest } from "next/server";
 
 describe("System Status API Route (/api/status)", () => {
@@ -7,6 +8,7 @@ describe("System Status API Route (/api/status)", () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
+    _resetStatusCacheForTesting();
   });
 
   afterEach(() => {
@@ -69,6 +71,7 @@ describe("System Status API Route (/api/status)", () => {
     expect(data.nebiusModelAvailable).toBe(true);
     expect(data.tavilyConfigured).toBe(true);
     expect(data.tavilyStatus).toBe("CONNECTED");
+    expect(data.tavilySearchAvailable).toBe(true);
   });
 
   it("reports CONFIGURED if Nebius key is valid but configured model is missing from catalogue", async () => {
@@ -146,12 +149,11 @@ describe("System Status API Route (/api/status)", () => {
     expect(jsonStr).not.toContain(sensitiveTavilySecret);
   });
 
-  it("handles HTTP 429 Rate Limit by retaining STALE connection if previously verified", async () => {
+  it("reports RATE_LIMITED on cold start when Tavily usage endpoint returns 429 without prior verification", async () => {
     process.env.NEBIUS_API_KEY = "mock-nebius-key";
     process.env.TAVILY_API_KEY = "tvly-mock-key";
     process.env.NEBIUS_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
 
-    // Step 1: Initial successful verification
     global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
       const urlStr = url.toString();
       if (urlStr.includes("nebius.com")) {
@@ -163,20 +165,31 @@ describe("System Status API Route (/api/status)", () => {
       }
       if (urlStr.includes("tavily.com")) {
         return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ key: { usage: 1 } }),
+          ok: false,
+          status: 429,
+          json: async () => ({ detail: { error: "Request limit exceeded" } }),
         });
       }
       return Promise.reject(new Error("Unknown URL"));
     });
 
-    const initialRes = await GET(new NextRequest("http://localhost:3000/api/status?refresh=true"));
-    const initialData = await initialRes.json();
-    expect(initialData.tavilyStatus).toBe("CONNECTED");
-    expect(initialData.tavilyIsStale).toBeFalsy();
+    // Cold start invocation without any clientTavilyVerified query param
+    const res = await GET(new NextRequest("http://localhost:3000/api/status?refresh=true"));
+    const data = await res.json();
 
-    // Step 2: Next check triggers 429 Rate Limit from Tavily
+    // Never claim CONNECTED if unverified on cold start
+    expect(data.tavilyStatus).toBe("RATE_LIMITED");
+    expect(data.tavilyStatusCode).toBe(429);
+    expect(data.tavilySearchAvailable).toBe(true);
+    expect(data.tavilyIsStale).toBeFalsy();
+    expect(data.tavilyError).toContain("HTTP 429");
+  });
+
+  it("retains CONNECTED labeled as STALE when client provides prior verification timestamp during a 429 rate limit", async () => {
+    process.env.NEBIUS_API_KEY = "mock-nebius-key";
+    process.env.TAVILY_API_KEY = "tvly-mock-key";
+    process.env.NEBIUS_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
+
     global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
       const urlStr = url.toString();
       if (urlStr.includes("nebius.com")) {
@@ -196,15 +209,58 @@ describe("System Status API Route (/api/status)", () => {
       return Promise.reject(new Error("Unknown URL"));
     });
 
-    const throttledRes = await GET(new NextRequest("http://localhost:3000/api/status?refresh=true"));
-    const throttledData = await throttledRes.json();
+    const clientVerifiedTime = "2026-10-25T18:00:00.000Z";
+    const req = new NextRequest(`http://localhost:3000/api/status?refresh=true&clientTavilyVerified=${encodeURIComponent(clientVerifiedTime)}`);
+    const res = await GET(req);
+    const data = await res.json();
 
-    // Must retain CONNECTED status labelled STALE with timestamp
-    expect(throttledData.tavilyStatus).toBe("CONNECTED");
-    expect(throttledData.tavilyIsStale).toBe(true);
-    expect(throttledData.tavilyStaleTimestamp).toBeDefined();
-    expect(throttledData.tavilyStatusCode).toBe(429);
-    expect(throttledData.tavilyError).toContain("HTTP 429");
+    // Must retain CONNECTED status labelled STALE with the timestamp provided
+    expect(data.tavilyStatus).toBe("CONNECTED");
+    expect(data.tavilyIsStale).toBe(true);
+    expect(data.tavilyStaleTimestamp).toBe(clientVerifiedTime);
+    expect(data.tavilyStatusCode).toBe(429);
+    expect(data.tavilyError).toContain("HTTP 429");
+    expect(data.tavilyError).toContain("STALE");
+  });
+
+  it("verifies genuine search connectivity when verifySearch=true returns 200 OK", async () => {
+    process.env.NEBIUS_API_KEY = "mock-nebius-key";
+    process.env.TAVILY_API_KEY = "tvly-mock-key";
+    process.env.NEBIUS_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
+
+    let searchCalled = false;
+    global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("nebius.com")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: [{ id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B" }] }),
+        });
+      }
+      if (urlStr.includes("tavily.com/search")) {
+        searchCalled = true;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            query: "NVIDIA Hopper H100 GPU architecture",
+            results: [{ title: "NVIDIA H100 Architecture", url: "https://nvidia.com/h100" }],
+          }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
+    const req = new NextRequest("http://localhost:3000/api/status?verifySearch=true");
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(searchCalled).toBe(true);
+    expect(data.tavilyStatus).toBe("CONNECTED");
+    expect(data.tavilyStatusCode).toBe(200);
+    expect(data.tavilySearchAvailable).toBe(true);
+    expect(data.tavilyIsStale).toBeFalsy();
   });
 
   it("handles network timeout gracefully without crashing", async () => {
@@ -221,7 +277,9 @@ describe("System Status API Route (/api/status)", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
+    expect(data.nebiusStatus).toBe("FAILED");
     expect(data.nebiusError).toContain("timed out");
+    expect(data.tavilyStatus).toBe("FAILED");
     expect(data.tavilyError).toContain("timed out");
   });
 });

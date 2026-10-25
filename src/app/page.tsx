@@ -102,19 +102,50 @@ export default function Home() {
   const statusRequestIdRef = useRef(0);
 
   // Fetch system status with active caching, sequence tracking & on-demand refresh support
-  const fetchStatus = useCallback(async (bypassCache = false) => {
+  const fetchStatus = useCallback(async (bypassCache = false, verifySearch = false) => {
     const currentRequestId = ++statusRequestIdRef.current;
     if (bypassCache) setIsRefreshingStatus(true);
 
     try {
-      const url = bypassCache ? "/api/status?refresh=true" : "/api/status";
-      const res = await fetch(url, { cache: "no-store" });
+      const params = new URLSearchParams();
+      if (bypassCache) params.set("refresh", "true");
+      if (verifySearch) params.set("verifySearch", "true");
+
+      // Check durable client storage for prior verified timestamps (survives Vercel cold starts)
+      if (typeof window !== "undefined") {
+        try {
+          const tavilyVerified = localStorage.getItem("varanasi_tavily_verified");
+          const nebiusVerified = localStorage.getItem("varanasi_nebius_verified");
+          if (tavilyVerified) params.set("clientTavilyVerified", tavilyVerified);
+          if (nebiusVerified) params.set("clientNebiusVerified", nebiusVerified);
+        } catch {
+          // Ignore localStorage errors (e.g. private browsing)
+        }
+      }
+
+      const queryString = params.toString() ? `?${params.toString()}` : "";
+      const res = await fetch(`/api/status${queryString}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Status check returned ${res.status}`);
       const data: SystemStatusResponse = await res.json();
 
       // Guard against race conditions: prevent slower/older response from overwriting newer one
       if (currentRequestId === statusRequestIdRef.current) {
         setSystemStatus(data);
+
+        // Record genuine verification in durable client storage
+        if (typeof window !== "undefined") {
+          try {
+            if (data.tavilyStatus === "CONNECTED" && !data.tavilyIsStale) {
+              localStorage.setItem("varanasi_tavily_verified", data.checkedAt || new Date().toISOString());
+            }
+            if (data.nebiusStatus === "CONNECTED" && !data.nebiusIsStale) {
+              localStorage.setItem("varanasi_nebius_verified", data.checkedAt || new Date().toISOString());
+            }
+          } catch {
+            // Ignore storage write errors
+          }
+        }
+
         if (data.nebiusModel) {
           setBaselineModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
           setProposedModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
@@ -137,15 +168,15 @@ export default function Home() {
     }
   }, []);
 
-  // Poll system status on mount, periodically every 30s, and when browser tab regains focus
+  // Poll system status on mount, periodically every 45s, and when browser tab regains focus
   useEffect(() => {
     // Automatically perform a fresh status check when app first opens (bypassing stale cache)
     fetchStatus(true);
 
-    // Keep polling at a reasonable 30s interval
+    // Keep polling at a reasonable 45s interval
     const intervalId = setInterval(() => {
       fetchStatus(false);
-    }, 30000);
+    }, 45000);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
@@ -300,6 +331,18 @@ export default function Home() {
 
       const data: DiagnoseResponse = await res.json();
       setDiagnoseResult(data);
+      if (typeof window !== "undefined") {
+        try {
+          if (data.success) {
+            localStorage.setItem("varanasi_nebius_verified", new Date().toISOString());
+          }
+          if (data.citations && data.citations.length > 0) {
+            localStorage.setItem("varanasi_tavily_verified", new Date().toISOString());
+          }
+        } catch {
+          // Ignore storage write error
+        }
+      }
       fetchStatus(true);
 
       if (data.suggestedPatch) {
@@ -495,6 +538,7 @@ export default function Home() {
             systemStatus={systemStatus}
             setActiveTab={setActiveTab}
             onRefreshStatus={() => fetchStatus(true)}
+            onVerifySearch={() => fetchStatus(true, true)}
             isRefreshingStatus={isRefreshingStatus}
           />
         )}

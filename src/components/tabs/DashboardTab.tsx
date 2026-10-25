@@ -301,6 +301,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                     ? "bg-[#FEF3C7] text-status-warning border border-status-warning/30 animate-pulse"
                     : systemStatus?.nebiusStatus === "CONFIGURED"
                     ? "bg-surface-secondary text-text-secondary border border-border-standard"
+                    : systemStatus?.nebiusStatus === "RATE_LIMITED" || systemStatus?.nebiusStatus === "DEGRADED"
+                    ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
                     : systemStatus?.nebiusStatus === "FAILED"
                     ? "bg-[#FEE2E2] text-status-error border border-status-error/30"
                     : "bg-surface-secondary text-text-muted border border-border-standard"
@@ -310,6 +312,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   ? "CHECKING..."
                   : systemStatus.nebiusStatus === "CONNECTED" && systemStatus.nebiusIsStale
                   ? "CONNECTED (STALE)"
+                  : systemStatus.nebiusStatus === "RATE_LIMITED"
+                  ? "RATE LIMITED"
                   : systemStatus.nebiusStatus}
               </span>
             </div>
@@ -339,6 +343,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                     ? "bg-[#FEF3C7] text-status-warning border border-status-warning/30 animate-pulse"
                     : systemStatus?.tavilyStatus === "CONFIGURED"
                     ? "bg-surface-secondary text-text-secondary border border-border-standard"
+                    : systemStatus?.tavilyStatus === "RATE_LIMITED" || systemStatus?.tavilyStatus === "DEGRADED"
+                    ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
                     : systemStatus?.tavilyStatus === "FAILED"
                     ? "bg-[#FEE2E2] text-status-error border border-status-error/30"
                     : "bg-surface-secondary text-text-muted border border-border-standard"
@@ -348,6 +354,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   ? "CHECKING..."
                   : systemStatus.tavilyStatus === "CONNECTED" && systemStatus.tavilyIsStale
                   ? "CONNECTED (STALE)"
+                  : systemStatus.tavilyStatus === "RATE_LIMITED"
+                  ? "RATE LIMITED"
                   : systemStatus.tavilyStatus}
               </span>
             </div>

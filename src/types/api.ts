@@ -5,6 +5,8 @@ export type IntegrationState =
   | "CONFIGURED"
   | "CHECKING"
   | "CONNECTED"
+  | "RATE_LIMITED"
+  | "DEGRADED"
   | "FAILED"
   | "UNKNOWN";
 
@@ -59,6 +61,7 @@ export interface SystemStatusResponse {
   tavilyStatus: IntegrationState;
   tavilyError?: string;
   tavilyStatusCode?: number;
+  tavilySearchAvailable?: boolean;
   tavilyIsStale?: boolean;
   tavilyStaleTimestamp?: string;
   appVersion: string;
