@@ -130,6 +130,8 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
       proposedCostUsd: proposedCost,
       deltaSavingsUsd: deltaSavings,
       percentageSavings,
+      isSavingsVerified: options.finopsComparison ? options.finopsComparison.isSavingsVerified : (options.fallbackFinops?.isPriceVerified ?? false),
+      savingsClassification: options.finopsComparison ? options.finopsComparison.savingsClassification : (options.fallbackFinops?.isPriceVerified ? "VERIFIED_PUBLISHED" : "UNVERIFIED_ESTIMATE"),
       assumptions,
       priceSources,
     },
@@ -351,7 +353,7 @@ export function renderPassportHtml(passport: RunCostPassport): string {
         <div class="meta-box">
           <div class="meta-label">Pricing Sources Verified</div>
           <div class="meta-value" style="font-size: 12px; font-weight: normal; margin-top: 4px;">
-            ${passport.finopsSummary.priceSources.map((ps) => `<div>${ps.label}: $${ps.rate}/${ps.unit} (${ps.lastVerifiedDate})</div>`).join("")}
+            ${passport.finopsSummary.priceSources.map((ps) => `<div>${ps.label}: ${ps.rate !== null ? `$${ps.rate.toFixed(2)}` : "UNKNOWN"}/${ps.unit} (${ps.isVerified ? "Verified " + ps.lastVerifiedDate : "Unverified / User Assumption"})</div>`).join("")}
           </div>
         </div>
       </div>

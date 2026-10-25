@@ -1,5 +1,5 @@
 import { PreflightReport, CheckResult, Finding, ProposedPatch, CheckStatus } from "./runguard";
-import { FinOpsComparisonResult, FinOpsCalculationResult } from "./finops";
+import { FinOpsComparisonResult, FinOpsCalculationResult, FinOpsPriceSource } from "./finops";
 
 export interface EvidenceCitation {
   title: string;
@@ -40,14 +40,10 @@ export interface RunCostPassport {
     proposedCostUsd: number;
     deltaSavingsUsd: number;
     percentageSavings: number;
+    isSavingsVerified: boolean;
+    savingsClassification: string;
     assumptions: string[];
-    priceSources: {
-      label: string;
-      rate: number;
-      unit: string;
-      sourceUrl: string;
-      lastVerifiedDate: string;
-    }[];
+    priceSources: FinOpsPriceSource[];
   };
   unresolvedRisks: string[];
   auditTrail: {

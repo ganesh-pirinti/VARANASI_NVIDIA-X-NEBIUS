@@ -1,8 +1,9 @@
 import { GpuSpec } from "@/types/finops";
 
 /**
- * Hardware specifications and verified reference prices with verifiable links
- * Last verified date: 2026-02-15
+ * Audited Hardware Specifications and Official Pricing Catalog
+ * Audited directly against official Nebius AI Cloud pricing: https://nebius.com/prices
+ * Verification timestamp: 2026-02-20
  */
 export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
   {
@@ -14,10 +15,14 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     fp16Tflops: 989,
     fp8Tflops: 1979,
     interconnect: "NVLink 4 (900 GB/s)",
-    standardHourlyRateUsd: 2.85,
+    onDemandHourlyRateUsd: 4.50, // Official on-demand rate from nebius.com/prices
+    preemptibleHourlyRateUsd: 0.79, // Official dynamic spot baseline from nebius.com/prices
+    gpusPerInstance: 1,
+    priceStatus: "VERIFIED",
     provider: "Nebius",
-    priceSourceUrl: "https://nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    priceSourceUrl: "https://nebius.com/prices",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "Verified on-demand ($4.50/GPU-hr) and dynamic preemptible spot (starts from $0.79/GPU-hr) from https://nebius.com/prices. Billed per second with 1-hr unit.",
   },
   {
     id: "nebius-h200-sxm",
@@ -28,24 +33,50 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     fp16Tflops: 989,
     fp8Tflops: 1979,
     interconnect: "NVLink 4 (900 GB/s)",
-    standardHourlyRateUsd: 3.85,
+    onDemandHourlyRateUsd: 5.40, // Official on-demand rate from nebius.com/prices
+    preemptibleHourlyRateUsd: 0.79, // Official dynamic spot baseline from nebius.com/prices
+    gpusPerInstance: 1,
+    priceStatus: "VERIFIED",
     provider: "Nebius",
-    priceSourceUrl: "https://nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    priceSourceUrl: "https://nebius.com/prices",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "Verified on-demand ($5.40/GPU-hr) and dynamic preemptible spot (starts from $0.79/GPU-hr) from https://nebius.com/prices.",
   },
   {
     id: "nebius-l40s",
-    name: "NVIDIA L40S 48GB",
+    name: "NVIDIA L40S 48GB (Intel CPU)",
     architecture: "Ada Lovelace",
     vramGb: 48,
     memoryBandwidthTbSec: 0.864,
     fp16Tflops: 366,
     fp8Tflops: 733,
     interconnect: "PCIe 4.0 x16 (64 GB/s)",
-    standardHourlyRateUsd: 1.25,
+    onDemandHourlyRateUsd: 1.55, // Official on-demand rate from nebius.com/prices
+    preemptibleHourlyRateUsd: 0.74, // Official flat preemptible rate from nebius.com/prices
+    gpusPerInstance: 1,
+    priceStatus: "VERIFIED",
     provider: "Nebius",
-    priceSourceUrl: "https://nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    priceSourceUrl: "https://nebius.com/prices",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "Verified Intel CPU configuration: $1.55 on-demand / $0.74 preemptible flat rate from https://nebius.com/prices.",
+  },
+  {
+    id: "nebius-l40s-amd",
+    name: "NVIDIA L40S 48GB (AMD CPU)",
+    architecture: "Ada Lovelace",
+    vramGb: 48,
+    memoryBandwidthTbSec: 0.864,
+    fp16Tflops: 366,
+    fp8Tflops: 733,
+    interconnect: "PCIe 4.0 x16 (64 GB/s)",
+    onDemandHourlyRateUsd: 1.82, // Official on-demand rate from nebius.com/prices
+    preemptibleHourlyRateUsd: 0.90, // Official flat preemptible rate from nebius.com/prices
+    gpusPerInstance: 1,
+    priceStatus: "VERIFIED",
+    provider: "Nebius",
+    priceSourceUrl: "https://nebius.com/prices",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "Verified AMD CPU configuration: $1.82 on-demand / $0.90 preemptible flat rate from https://nebius.com/prices.",
   },
   {
     id: "nebius-a100-80gb-sxm",
@@ -55,13 +86,17 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     memoryBandwidthTbSec: 2.039,
     fp16Tflops: 312,
     interconnect: "NVLink 3 (600 GB/s)",
-    standardHourlyRateUsd: 1.95,
+    onDemandHourlyRateUsd: null, // UNKNOWN: unlisted on current public self-serve page
+    preemptibleHourlyRateUsd: null, // UNKNOWN
+    gpusPerInstance: 1,
+    priceStatus: "UNKNOWN",
     provider: "Nebius",
-    priceSourceUrl: "https://nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    priceSourceUrl: "https://nebius.com/prices (Unlisted SKU / Requires Quote)",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "A100 is not listed on active self-serve public pricing on nebius.com/prices. Requires user-supplied quote.",
   },
   {
-    id: "nvidia-b200-nvl",
+    id: "nebius-b200-sxm",
     name: "NVIDIA Blackwell B200 192GB",
     architecture: "Blackwell",
     vramGb: 192,
@@ -69,10 +104,14 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     fp16Tflops: 2250,
     fp8Tflops: 4500,
     interconnect: "NVLink 5 (1.8 TB/s)",
-    standardHourlyRateUsd: 5.20,
-    provider: "NVIDIA Cloud",
-    priceSourceUrl: "https://www.nvidia.com/en-us/data-center/dgx-cloud/",
-    lastVerifiedDate: "2026-02-15",
+    onDemandHourlyRateUsd: null, // UNKNOWN: public self-serve list price requires commitment quote
+    preemptibleHourlyRateUsd: 3.95, // Dynamic spot baseline indicator
+    gpusPerInstance: 1,
+    priceStatus: "UNKNOWN",
+    provider: "Nebius",
+    priceSourceUrl: "https://nebius.com/prices (Requires Enterprise Reservation Quote)",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "Blackwell on-demand rate requires dedicated reservation contract. Mark rate as UNKNOWN unless supplied by user.",
   },
   {
     id: "aws-p5-h100",
@@ -83,10 +122,15 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     fp16Tflops: 989,
     fp8Tflops: 1979,
     interconnect: "NVSwitch 900 GB/s + EFA 3.2 Tbps",
-    standardHourlyRateUsd: 4.12, // per individual GPU-equivalent ($32.96/hr for 8x instance)
+    onDemandHourlyRateUsd: 4.12, // $32.96 / 8 GPUs = $4.12 per GPU-hour
+    preemptibleHourlyRateUsd: null, // Spot availability constrained
+    gpusPerInstance: 8,
+    instanceOnDemandRateUsd: 32.96, // $32.96 per instance-hour
+    priceStatus: "VERIFIED",
     provider: "AWS",
     priceSourceUrl: "https://aws.amazon.com/ec2/pricing/on-demand/",
-    lastVerifiedDate: "2026-02-15",
+    lastVerifiedDate: "2026-02-20",
+    pricingNotes: "Official AWS on-demand pricing: $32.96 per instance-hour for 8x H100 ($4.12/GPU-hour equivalent).",
   }
 ];
 
@@ -96,27 +140,30 @@ export const MODEL_TOKEN_RATES = [
     name: "NVIDIA Llama 3.1 Nemotron 70B Instruct",
     inputRatePerMillionUsd: 0.35,
     outputRatePerMillionUsd: 0.90,
+    isRateVerified: true,
     provider: "Nebius Token Factory",
     priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    lastVerifiedDate: "2026-02-20",
   },
   {
     modelId: "nvidia/Nemotron-3_5-Lightning",
     name: "NVIDIA Nemotron 3.5 Lightning",
     inputRatePerMillionUsd: 0.15,
     outputRatePerMillionUsd: 0.40,
+    isRateVerified: true,
     provider: "Nebius Token Factory",
     priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    lastVerifiedDate: "2026-02-20",
   },
   {
     modelId: "meta-llama/Meta-Llama-3.1-8B-Instruct",
     name: "Meta Llama 3.1 8B Instruct",
     inputRatePerMillionUsd: 0.06,
     outputRatePerMillionUsd: 0.18,
+    isRateVerified: true,
     provider: "Nebius Token Factory",
     priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
-    lastVerifiedDate: "2026-02-15",
+    lastVerifiedDate: "2026-02-20",
   }
 ];
 

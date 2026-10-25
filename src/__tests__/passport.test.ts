@@ -23,6 +23,7 @@ describe("Run & Cost Passport Generation", () => {
       gpuId: "nebius-h100-sxm",
       gpuCount: 8,
       billedHours: 100,
+      pricingModel: "preemptible", // Preemptible spot $0.79/hr
     });
     const comparison = compareFinOpsConfigurations(baseline, proposed);
 
@@ -36,8 +37,10 @@ describe("Run & Cost Passport Generation", () => {
 
     expect(passport.id).toBeDefined();
     expect(passport.targetEnvironment.projectName).toBe("Nemotron Production Cluster");
-    expect(passport.finopsSummary.baselineCostUsd).toBeGreaterThan(0);
-    expect(passport.finopsSummary.deltaSavingsUsd).toBeGreaterThan(0);
+    expect(passport.finopsSummary.baselineCostUsd).toBe(3296);
+    expect(passport.finopsSummary.proposedCostUsd).toBe(632);
+    expect(passport.finopsSummary.deltaSavingsUsd).toBe(2664);
+    expect(passport.finopsSummary.isSavingsVerified).toBe(true);
     expect(passport.auditTrail.length).toBeGreaterThanOrEqual(1);
 
     // Verify secrets are NOT exposed

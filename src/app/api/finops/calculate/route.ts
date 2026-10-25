@@ -13,6 +13,7 @@ export interface FinOpsCalculatePayload {
     baselinePrecision?: string;
     proposedPrecision?: string;
     modelParamBillion?: number;
+    isEmpiricallyBenchmarked?: boolean;
   };
 }
 
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
         baselinePrecision: body.context?.baselinePrecision,
         proposedPrecision: body.context?.proposedPrecision,
         modelParamBillion: body.context?.modelParamBillion,
+        isEmpiricallyBenchmarked: body.context?.isEmpiricallyBenchmarked,
       });
 
       return NextResponse.json({

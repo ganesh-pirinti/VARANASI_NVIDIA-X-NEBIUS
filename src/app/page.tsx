@@ -47,7 +47,9 @@ export default function Home() {
     gpuId: "aws-p5-h100",
     gpuCount: 8,
     billedHours: 720,
-    customHourlyRateUsd: 4.12,
+    pricingModel: "on-demand",
+    billingUnit: "GPU-hour",
+    customHourlyRateUsd: null,
   });
 
   const [baselineModel, setBaselineModel] = useState<ModelInferenceInput>({
@@ -62,7 +64,9 @@ export default function Home() {
     gpuId: "nebius-h100-sxm",
     gpuCount: 4,
     billedHours: 720,
-    customHourlyRateUsd: 2.85,
+    pricingModel: "on-demand",
+    billingUnit: "GPU-hour",
+    customHourlyRateUsd: null,
   });
 
   const [proposedModel, setProposedModel] = useState<ModelInferenceInput>({
@@ -129,6 +133,9 @@ export default function Home() {
       gpuId: fixture.finopsDefaults.baselineGpuId,
       gpuCount: fixture.finopsDefaults.baselineGpuCount,
       billedHours: fixture.finopsDefaults.baselineHours,
+      customHourlyRateUsd: null,
+      pricingModel: "on-demand",
+      billingUnit: "GPU-hour",
     }));
 
     setProposedGpu((prev) => ({
@@ -136,6 +143,9 @@ export default function Home() {
       gpuId: fixture.finopsDefaults.proposedGpuId,
       gpuCount: fixture.finopsDefaults.proposedGpuCount,
       billedHours: fixture.finopsDefaults.proposedHours,
+      customHourlyRateUsd: null,
+      pricingModel: "on-demand",
+      billingUnit: "GPU-hour",
     }));
 
     setBaselineModel((prev) => ({

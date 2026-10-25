@@ -81,7 +81,10 @@ Training and serving modern Large Language Models (e.g. NVIDIA Nemotron, Llama 3
 Critical calculations and verification states are computed mathematically without LLM dependencies.
 
 ### GPU Workload Cost Formula
-$$C_{\text{GPU}} = \sum (\text{GPU Count} \times \text{Billed Hours} \times \text{Price per GPU-hour}) + C_{\text{storage}} + C_{\text{network}}$$
+- **GPU-hour unit**:
+  $$C_{\text{GPU}} = \sum (\text{GPU Count} \times \text{Billed Hours} \times \text{Price per GPU-hour}) + C_{\text{storage}} + C_{\text{network}}$$
+- **Instance-hour unit** (e.g. 8-GPU AWS instances):
+  $$C_{\text{GPU}} = \sum (\text{Instance Count} \times \text{Billed Hours} \times \text{Price per Instance-hour}) + C_{\text{storage}} + C_{\text{network}}$$
 
 ### Model Inference Token Cost Formula
 $$C_{\text{API}} = \frac{\text{Input Tokens} \times \text{Input Rate} + \text{Output Tokens} \times \text{Output Rate}}{1,000,000}$$
@@ -89,6 +92,13 @@ $$C_{\text{API}} = \frac{\text{Input Tokens} \times \text{Input Rate} + \text{Ou
 ### Cost Reduction Delta
 $$\Delta C = \text{Baseline Cost} - \text{Alternative Cost}$$
 $$\text{Percentage Difference} = \frac{\Delta C}{\text{Baseline Cost}} \times 100\%$$
+
+### Audited Nebius Pricing Standards (https://nebius.com/prices)
+- **NVIDIA H100 SXM5 80GB**: On-Demand `$4.50`/GPU-hr | Preemptible Spot from `$0.79`/GPU-hr
+- **NVIDIA H200 SXM 141GB**: On-Demand `$5.40`/GPU-hr | Preemptible Spot from `$0.79`/GPU-hr
+- **NVIDIA L40S 48GB**: On-Demand `$1.55`/GPU-hr (Intel) / `$1.82` (AMD) | Preemptible `$0.74`/GPU-hr (Intel) / `$0.90` (AMD)
+- **Unconfirmed Rates (A100, B200 on-demand)**: Marked as `UNKNOWN` and require user-supplied rate override.
+- **Strict Verification Guarantee**: Savings are marked `VERIFIED_PUBLISHED` only when both baseline and proposed rates match authoritative published sources. Never claim cost savings based on unverified prices or unmeasured workload performance.
 
 ### Deterministic VRAM & KV-Cache Sizing
 - **Weight Memory (GiB)**: $\text{Params (Billions)} \times 10^9 \times \text{Bytes per Param} / 1024^3$
@@ -208,7 +218,7 @@ TAVILY_API_KEY=your_actual_tavily_api_key_here
 ```bash
 npm test
 ```
-Runs 23 unit tests across GPU cost calculations, token pricing, preflight checks, VRAM calculations, secret sanitization, and passport generation.
+Runs 26 unit tests across GPU cost calculations (on-demand vs preemptible, GPU-hour vs instance-hour), token pricing, unverified price handling, source attribution, preflight checks, VRAM calculations, secret sanitization, and passport generation.
 
 ### Step 4: Run Development Server
 ```bash

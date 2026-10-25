@@ -145,8 +145,13 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               </div>
             </div>
             {finopsComparison && (
-              <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-xs font-bold text-emerald-400">
+              <span className={`rounded border px-2 py-0.5 text-xs font-bold ${
+                finopsComparison.isSavingsVerified
+                  ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+                  : "bg-amber-500/15 border-amber-500/30 text-amber-400"
+              }`}>
                 {finopsComparison.percentageDifference >= 0 ? `-${finopsComparison.percentageDifference.toFixed(0)}%` : `+${Math.abs(finopsComparison.percentageDifference).toFixed(0)}%`}
+                {!finopsComparison.isSavingsVerified && " (Est)"}
               </span>
             )}
           </div>
