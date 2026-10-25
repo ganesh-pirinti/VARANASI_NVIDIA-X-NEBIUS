@@ -8,12 +8,14 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const forceRefresh = url.searchParams.get("refresh") === "true";
   const verifySearch = url.searchParams.get("verifySearch") === "true";
+  const verifyInference = url.searchParams.get("verifyInference") === "true";
   const clientTavilyVerified = url.searchParams.get("clientTavilyVerified");
   const clientNebiusVerified = url.searchParams.get("clientNebiusVerified");
 
   const { response } = await getSystemStatus({
     forceRefresh,
     verifySearch,
+    verifyInference,
     clientTavilyVerified,
     clientNebiusVerified,
   });

@@ -97,6 +97,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="font-semibold text-nvidia-dark">Connected</span>
           </div>
         );
+      case "STALE": {
+        const timeStr = staleTimestamp ? new Date(staleTimestamp).toLocaleTimeString() : "";
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help bg-[#FEF3C7] text-text-primary px-2 py-0.5 rounded-[4px] border border-status-warning/40 shadow-sm"
+            title={`${label} historical verified connection (STALE at ${timeStr}). ${error || ""}`}
+          >
+            <span className="h-2 w-2 rounded-full bg-status-warning" />
+            <span className="text-text-secondary">{label}:</span>
+            <span className="font-semibold text-text-primary">Stale</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider bg-white px-1 rounded text-status-warning border border-status-warning/30">
+              {timeStr || "Cached"}
+            </span>
+          </div>
+        );
+      }
       case "CONFIGURED":
         return (
           <div

@@ -43,6 +43,10 @@ describe("Run & Cost Passport Generation", () => {
     expect(passport.finopsSummary.isSavingsVerified).toBe(true);
     expect(passport.auditTrail.length).toBeGreaterThanOrEqual(1);
 
+    // Verify SHA-256 integrity hash is 64 hex characters
+    expect(passport.integrityHash).toBeDefined();
+    expect(passport.integrityHash).toMatch(/^[a-f0-9]{64}$/);
+
     // Verify secrets are NOT exposed
     const passportJson = JSON.stringify(passport);
     expect(passportJson).not.toContain("sk-");
@@ -70,5 +74,7 @@ describe("Run & Cost Passport Generation", () => {
     expect(html).toContain("VARANASI — Autonomous GPU RunGuard & FinOps Margin Engine");
     expect(html).toContain("HTML Report Test");
     expect(html).toContain(passport.id);
+    expect(html).toContain(passport.integrityHash!);
+    expect(html).toContain("SHA-256 Integrity Hash");
   });
 });

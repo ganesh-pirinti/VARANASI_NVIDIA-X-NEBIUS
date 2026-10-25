@@ -66,6 +66,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
   const [activeFindingForFix, setActiveFindingForFix] = useState<Finding | null>(null);
   const [inspectedCheck, setInspectedCheck] = useState<CheckResult | null>(null);
   const [detailsCheck, setDetailsCheck] = useState<CheckResult | null>(null);
+  const [showFormulaAssumptions, setShowFormulaAssumptions] = useState(false);
 
   // Custom rules collection stored with inputs
   const customRules = inputs.customRules || [];
@@ -97,6 +98,10 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
     reader.readAsText(file);
   };
 
+  // Target GPU specification and hardware architecture constraints
+  const targetGpuSpec = VERIFIED_GPU_CATALOG.find((g) => g.id === inputs.targetGpu) || VERIFIED_GPU_CATALOG[0];
+  const supportsFp8 = targetGpuSpec.architecture === "Hopper" || targetGpuSpec.architecture === "Ada Lovelace" || targetGpuSpec.architecture === "Blackwell";
+
   // Dynamic live VRAM calculation based on active inputs
   const liveVram = inputs.estimatedModelParamsBillion && inputs.estimatedModelParamsBillion > 0
     ? estimateVram({
@@ -112,6 +117,44 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
   const vramPercent = liveVram
     ? Math.min(100, Math.round((liveVram.totalEstimatedVramGb / liveVram.gpuMemoryAvailableGb) * 100))
     : 0;
+
+  // Precomputed Remediation Alternative 1: FP8
+  const fp8Vram = inputs.estimatedModelParamsBillion && inputs.estimatedModelParamsBillion > 0
+    ? estimateVram({
+        modelParamsBillion: inputs.estimatedModelParamsBillion,
+        precision: "FP8",
+        contextLengthTokens: inputs.contextLengthTokens || 4096,
+        batchSize: inputs.batchSize || 1,
+        targetGpuId: inputs.targetGpu || "nebius-h100-sxm",
+        gpuCount: inputs.gpuCount || 1,
+      })
+    : null;
+
+  // Precomputed Remediation Alternative 2: Halved Context Length
+  const halvedContextTokens = Math.max(2048, Math.floor((inputs.contextLengthTokens || 8192) / 2));
+  const reducedContextVram = inputs.estimatedModelParamsBillion && inputs.estimatedModelParamsBillion > 0
+    ? estimateVram({
+        modelParamsBillion: inputs.estimatedModelParamsBillion,
+        precision: inputs.precision || "FP16",
+        contextLengthTokens: halvedContextTokens,
+        batchSize: inputs.batchSize || 1,
+        targetGpuId: inputs.targetGpu || "nebius-h100-sxm",
+        gpuCount: inputs.gpuCount || 1,
+      })
+    : null;
+
+  // Precomputed Remediation Alternative 3: Scaled GPU Count
+  const scaledGpuCount = Math.min(8, Math.max(2, (inputs.gpuCount || 1) * 2));
+  const scaledGpuVram = inputs.estimatedModelParamsBillion && inputs.estimatedModelParamsBillion > 0
+    ? estimateVram({
+        modelParamsBillion: inputs.estimatedModelParamsBillion,
+        precision: inputs.precision || "FP16",
+        contextLengthTokens: inputs.contextLengthTokens || 4096,
+        batchSize: inputs.batchSize || 1,
+        targetGpuId: inputs.targetGpu || "nebius-h100-sxm",
+        gpuCount: scaledGpuCount,
+      })
+    : null;
 
   // Actions trigger handlers
   const handleTriggerAiFix = (finding: Finding) => {
@@ -137,11 +180,11 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
           <div className="flex items-center gap-2">
             <Info className="h-4 w-4 text-status-warning shrink-0" />
             <span>
-              Inspecting Simulated Fixture: <strong className="text-text-primary font-mono">{loadedFixture.name}</strong>. Modifications to input fields update inspection dynamically.
+              Inspecting Simulated Demonstration Fixture: <strong className="text-text-primary font-mono">{loadedFixture.name}</strong>. Deterministic inputs for evaluation. Live execution requires deployed GPU cluster.
             </span>
           </div>
           <span className="text-[11px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-[4px] bg-white text-status-warning border border-status-warning/30 shrink-0 shadow-sm">
-            Simulated Inputs
+            Simulated Demonstration Fixture
           </span>
         </div>
       )}
@@ -383,6 +426,47 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
             </div>
           </div>
 
+          {/* Expandable Formula Assumptions & Scaling Rules Drawer */}
+          <div className="pt-1">
+            <button
+              onClick={() => setShowFormulaAssumptions(!showFormulaAssumptions)}
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-nvidia-dark hover:text-nvidia-hover transition"
+            >
+              <Info className="h-3.5 w-3.5 text-nvidia-green" />
+              <span>{showFormulaAssumptions ? "Hide Formula Assumptions & Architecture Constraints" : "View Formula Assumptions & Architecture Constraints"}</span>
+            </button>
+
+            {showFormulaAssumptions && (
+              <div className="mt-2.5 rounded-[8px] border border-border-standard bg-surface-secondary p-3.5 text-[12px] text-text-secondary space-y-2 animate-fade-in font-mono leading-relaxed">
+                <div className="font-bold text-text-primary uppercase tracking-wider text-[11px]">
+                  VRAM Allocation Model &amp; Scaling Specifications
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-2 rounded bg-white border border-border-subtle">
+                    <strong className="text-text-primary block font-semibold">1. Model Weight Memory:</strong>
+                    <code>(Params × 10⁹ × BytesPerWeight) / (1024³ × GPU_Count)</code>
+                    <div className="text-[10px] text-text-muted mt-1">FP32: 4B, FP16/BF16: 2B, FP8: 1B, INT4: 0.5B per parameter.</div>
+                  </div>
+                  <div className="p-2 rounded bg-white border border-border-subtle">
+                    <strong className="text-text-primary block font-semibold">2. KV-Cache Memory:</strong>
+                    <code>2 × Layers × Dim_KV × BytesPerElem × S × B / (1024³ × GPU_Count)</code>
+                    <div className="text-[10px] text-text-muted mt-1">GQA factor ~0.25 on 70B+ Nemotron architectures.</div>
+                  </div>
+                  <div className="p-2 rounded bg-white border border-border-subtle">
+                    <strong className="text-text-primary block font-semibold">3. CUDA Context &amp; NCCL Ring Overhead:</strong>
+                    <code>1.6 GiB (single GPU) | 2.2 GiB (multi-GPU)</code>
+                    <div className="text-[10px] text-text-muted mt-1">Static buffer for CUDA driver context, CUDA graph captures, and NCCL communicators.</div>
+                  </div>
+                  <div className="p-2 rounded bg-white border border-border-subtle">
+                    <strong className="text-text-primary block font-semibold">4. Architecture Constraints:</strong>
+                    <code>FP8 Native: Hopper (H100/H200), Ada (L40S), Blackwell (B200)</code>
+                    <div className="text-[10px] text-text-muted mt-1">Ampere (A100) lacks native FP8 tensor cores; emulating FP8 degrades throughput.</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Actionable Alternatives if Capacity Exceeded */}
           {!liveVram.isFeasible && (
             <div className="rounded-[10px] border border-status-error/30 bg-[#FEF2F2] p-4 space-y-3 animate-fade-in">
@@ -391,36 +475,99 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
                 <span>Actionable Optimization Alternatives to Resolve Memory Overflow:</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[12px]">
+                {/* Alternative 1: FP8 */}
                 <button
+                  disabled={!supportsFp8}
                   onClick={() => setInputs((prev) => ({ ...prev, precision: "FP8" }))}
-                  className="rounded-[6px] border border-border-standard bg-white p-2.5 text-left hover:border-nvidia-green hover:bg-nvidia-surface/30 transition shadow-sm"
+                  className={`rounded-[6px] border p-3 text-left transition shadow-sm ${
+                    !supportsFp8
+                      ? "border-border-standard bg-white/60 opacity-60 cursor-not-allowed"
+                      : fp8Vram?.isFeasible
+                      ? "border-nvidia-green/60 bg-white hover:bg-nvidia-surface/30"
+                      : "border-border-standard bg-white hover:border-status-warning"
+                  }`}
                 >
-                  <div className="font-semibold text-text-primary">1. Quantize to FP8</div>
-                  <div className="text-text-secondary text-[11px] mt-0.5">Cuts model weight VRAM by ~50% with Hopper support.</div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-text-primary">1. Quantize to FP8</span>
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                        !supportsFp8
+                          ? "bg-[#FEE2E2] text-status-error"
+                          : fp8Vram?.isFeasible
+                          ? "bg-nvidia-surface text-nvidia-dark"
+                          : "bg-[#FEF3C7] text-status-warning"
+                      }`}
+                    >
+                      {!supportsFp8 ? "UNSUPPORTED" : fp8Vram?.isFeasible ? "FEASIBLE" : "INSUFFICIENT"}
+                    </span>
+                  </div>
+                  <div className="text-text-secondary text-[11px] mt-1">
+                    {!supportsFp8
+                      ? `Target ${targetGpuSpec.architecture} lacks native FP8 Tensor Cores. Upgrade to Hopper/Ada.`
+                      : `Projected: ${fp8Vram?.totalEstimatedVramGb ?? "~"} GiB/GPU (${fp8Vram?.isFeasible ? "Fits in memory" : "Still exceeds memory"}).`}
+                  </div>
                 </button>
+
+                {/* Alternative 2: Halved Context Length */}
                 <button
                   onClick={() =>
                     setInputs((prev) => ({
                       ...prev,
-                      contextLengthTokens: Math.max(2048, Math.floor((prev.contextLengthTokens || 8192) / 2)),
+                      contextLengthTokens: halvedContextTokens,
                     }))
                   }
-                  className="rounded-[6px] border border-border-standard bg-white p-2.5 text-left hover:border-nvidia-green hover:bg-nvidia-surface/30 transition shadow-sm"
+                  className={`rounded-[6px] border p-3 text-left bg-white transition shadow-sm ${
+                    reducedContextVram?.isFeasible
+                      ? "border-nvidia-green/60 hover:bg-nvidia-surface/30"
+                      : "border-border-standard hover:border-status-warning"
+                  }`}
                 >
-                  <div className="font-semibold text-text-primary">2. Reduce Context Length</div>
-                  <div className="text-text-secondary text-[11px] mt-0.5">Halves KV-cache memory allocation.</div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-text-primary">2. Reduce Context</span>
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                        reducedContextVram?.isFeasible
+                          ? "bg-nvidia-surface text-nvidia-dark"
+                          : "bg-[#FEF3C7] text-status-warning"
+                      }`}
+                    >
+                      {reducedContextVram?.isFeasible ? "FEASIBLE" : "INSUFFICIENT"}
+                    </span>
+                  </div>
+                  <div className="text-text-secondary text-[11px] mt-1">
+                    Halve context to {halvedContextTokens} tokens. Projected: {reducedContextVram?.totalEstimatedVramGb ?? "~"} GiB/GPU.
+                  </div>
                 </button>
+
+                {/* Alternative 3: Scale GPU Count */}
                 <button
                   onClick={() =>
                     setInputs((prev) => ({
                       ...prev,
-                      gpuCount: Math.min(8, (prev.gpuCount || 1) * 2),
+                      gpuCount: scaledGpuCount,
                     }))
                   }
-                  className="rounded-[6px] border border-border-standard bg-white p-2.5 text-left hover:border-nvidia-green hover:bg-nvidia-surface/30 transition shadow-sm"
+                  className={`rounded-[6px] border p-3 text-left bg-white transition shadow-sm ${
+                    scaledGpuVram?.isFeasible
+                      ? "border-nvidia-green/60 hover:bg-nvidia-surface/30"
+                      : "border-border-standard hover:border-status-warning"
+                  }`}
                 >
-                  <div className="font-semibold text-text-primary">3. Scale GPU Count</div>
-                  <div className="text-text-secondary text-[11px] mt-0.5">Distributes weights across GPUs via Tensor Parallelism.</div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-text-primary">3. Scale GPU Count</span>
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                        scaledGpuVram?.isFeasible
+                          ? "bg-nvidia-surface text-nvidia-dark"
+                          : "bg-[#FEF3C7] text-status-warning"
+                      }`}
+                    >
+                      {scaledGpuVram?.isFeasible ? "FEASIBLE" : "INSUFFICIENT"}
+                    </span>
+                  </div>
+                  <div className="text-text-secondary text-[11px] mt-1">
+                    Scale from {inputs.gpuCount || 1}x to {scaledGpuCount}x GPUs. Projected: {scaledGpuVram?.totalEstimatedVramGb ?? "~"} GiB/GPU.
+                  </div>
                 </button>
               </div>
             </div>

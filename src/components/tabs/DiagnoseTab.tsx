@@ -24,6 +24,7 @@ interface DiagnoseTabProps {
   setActiveTab: (tab: string) => void;
   onRefreshStatus?: () => void;
   onVerifySearch?: () => void;
+  onVerifyInference?: () => void;
   isRefreshingStatus?: boolean;
 }
 
@@ -35,6 +36,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
   setActiveTab,
   onRefreshStatus,
   onVerifySearch,
+  onVerifyInference,
   isRefreshingStatus = false,
 }) => {
   return (
@@ -67,6 +69,17 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-text-secondary">
             <span className="uppercase tracking-wider font-semibold">Live Integration Health &amp; Reachability</span>
             <div className="flex items-center gap-3">
+              {onVerifyInference && (
+                <button
+                  onClick={onVerifyInference}
+                  disabled={isRefreshingStatus}
+                  className="flex items-center gap-1.5 text-text-secondary hover:text-nvidia-dark font-sans text-[12px] font-semibold transition disabled:opacity-50"
+                  title="Perform a live token generation probe to Nebius Token Factory"
+                >
+                  <Sparkles className="h-3 w-3 text-nvidia-green" />
+                  <span>Test Inference</span>
+                </button>
+              )}
               {onVerifySearch && (
                 <button
                   onClick={onVerifySearch}
@@ -105,9 +118,19 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                   <span className="text-nvidia-dark flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
                     <CheckCircle2 className={`h-4 w-4 ${systemStatus.nebiusIsStale ? "text-status-warning" : "text-nvidia-green"}`} />
                     <span>Connected ({systemStatus.nebiusModel})</span>
-                    {systemStatus.nebiusIsStale && (
+                    {systemStatus.nebiusInferenceTested && (
+                      <span className="text-[10px] font-mono font-bold bg-nvidia-surface text-nvidia-dark px-1.5 py-0.5 rounded border border-nvidia-green/30">
+                        Inference Verified
+                      </span>
+                    )}
+                  </span>
+                ) : systemStatus.nebiusStatus === "STALE" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.nebiusError}>
+                    <AlertCircle className="h-4 w-4 text-status-warning" />
+                    <span>Stale ({systemStatus.nebiusModel})</span>
+                    {systemStatus.nebiusStaleTimestamp && (
                       <span className="text-[10px] font-mono font-bold bg-[#FEF3C7] text-status-warning px-1.5 py-0.5 rounded border border-status-warning/30">
-                        STALE ({systemStatus.nebiusStaleTimestamp ? new Date(systemStatus.nebiusStaleTimestamp).toLocaleTimeString() : ""})
+                        {new Date(systemStatus.nebiusStaleTimestamp).toLocaleTimeString()}
                       </span>
                     )}
                   </span>
@@ -155,11 +178,16 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                   </span>
                 ) : systemStatus.tavilyStatus === "CONNECTED" ? (
                   <span className="text-nvidia-dark flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
-                    <CheckCircle2 className={`h-4 w-4 ${systemStatus.tavilyIsStale ? "text-status-warning" : "text-nvidia-green"}`} />
+                    <CheckCircle2 className="h-4 w-4 text-nvidia-green" />
                     <span>Search Endpoint Live &amp; Verified</span>
-                    {systemStatus.tavilyIsStale && (
+                  </span>
+                ) : systemStatus.tavilyStatus === "STALE" ? (
+                  <span className="text-status-warning flex items-center gap-1.5 font-sans" title={systemStatus.tavilyError}>
+                    <AlertCircle className="h-4 w-4 text-status-warning" />
+                    <span>Search Verified (STALE)</span>
+                    {systemStatus.tavilyStaleTimestamp && (
                       <span className="text-[10px] font-mono font-bold bg-[#FEF3C7] text-status-warning px-1.5 py-0.5 rounded border border-status-warning/30">
-                        STALE ({systemStatus.tavilyStaleTimestamp ? new Date(systemStatus.tavilyStaleTimestamp).toLocaleTimeString() : ""})
+                        {new Date(systemStatus.tavilyStaleTimestamp).toLocaleTimeString()}
                       </span>
                     )}
                   </span>

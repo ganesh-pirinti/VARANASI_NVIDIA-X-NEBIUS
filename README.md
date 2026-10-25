@@ -1,20 +1,23 @@
 # VARANASI — Autonomous GPU RunGuard & FinOps Margin Engine
 
 > **Catch failures. Protect compute. Protect margins.**  
-> Built for the **Nebius × NVIDIA Global AI Hackathon 2026** — *Track: Coding and Agentic Engineering*
+> Built for the **Nebius × NVIDIA Global AI Hackathon 2026** — *Track: Coding and Agentic Engineering*  
+> **GitHub Repository:** [https://github.com/ganesh-pirinti/VARANASI_NVIDIA-X-NEBIUS](https://github.com/ganesh-pirinti/VARANASI_NVIDIA-X-NEBIUS)  
+> **Production Deployment:** [https://varanasi-nvidia-x-nebius.vercel.app](https://varanasi-nvidia-x-nebius.vercel.app)
 
 ---
 
 ## 1. Executive Summary & Problem Statement
 
-Training and serving modern Large Language Models (e.g. NVIDIA Nemotron, Llama 3.1, DeepSeek) on high-end cloud GPUs (such as **NVIDIA H100 SXM5**, **H200**, and **L40S**) is notoriously costly and brittle:
-- **Preventable Failures**: Workloads routinely crash minutes or hours into execution due to configuration hazards — such as container `/dev/shm` shared memory exhaustion (triggering PyTorch `Bus error`), CUDA Out Of Memory (OOM) due to unbudgeted KV-cache, NCCL collective operation timeouts, and unpinned CUDA ABI mismatches (e.g. FlashAttention JIT build failures).
-- **FinOps Blindspots**: Teams often overprovision compute (e.g., using 8x H100 SXMs for lightweight 8B models) or run suboptimal FP32 execution, inflating compute spend by 50% to 70% without measurable latency or throughput justification.
+Training and serving modern Large Language Models (such as **NVIDIA Nemotron 70B**, **Llama 3.1**, and **DeepSeek**) on high-performance cloud GPUs (**NVIDIA H100 SXM5**, **H200**, **L40S**, and **Blackwell B200**) is notoriously costly and operationally brittle:
+- **Preventable Failures**: AI workloads routinely crash minutes or hours into execution due to silent configuration hazards — including container `/dev/shm` shared memory exhaustion (triggering PyTorch `Bus error: SIGBUS`), CUDA Out Of Memory (OOM) due to unbudgeted KV-cache, NCCL collective operation watchdog timeouts, and unpinned CUDA ABI mismatches (e.g. FlashAttention JIT build failures).
+- **FinOps Blindspots**: Engineering teams frequently overprovision compute (e.g., deploying 8x H100 SXMs for lightweight 8B models) or run unoptimized FP32 execution, inflating compute spend by 50% to 70% without measurable latency or throughput justification.
 
-**VARANASI** addresses both challenges through two tightly coupled modules and a shared audit manifest:
-1. **GPU RunGuard**: Deterministic preflight checks for Dockerfiles, dependencies, cluster manifests, and diagnostic logs to detect failure conditions before deployment.
-2. **FinOps Engine**: Mathematical GPU workload ($C_{GPU}$) and model inference ($C_{API}$) margin engine with transparent formulas, verified published price sources, and waste detection.
-3. **Run & Cost Passport**: A certified, downloadable HTML/JSON compliance report with full audit trail and chain of custody.
+**VARANASI** addresses both challenges through deterministic engineering first, agentic AI assistance second, and independently verified results always:
+1. **GPU RunGuard**: Deterministic preflight checks for Dockerfiles, dependencies, cluster manifests, and diagnostic logs to detect failure conditions before deployment. Features real-time VRAM/KV-cache mathematical estimation and hardware architecture constraint validation (Hopper/Ada native FP8 vs Ampere limitations).
+2. **AI Fix & Closed-Loop Verification**: Reviewable unified `.patch` generator with a strict lifecycle (`GENERATED -> APPROVED -> APPLIED -> RE_VERIFIED`) that re-runs the deterministic validator against working buffers without arbitrary code execution.
+3. **FinOps Margin Engine**: Audited workload cost calculations ($C_{GPU}$) and model inference ($C_{API}$) grounded in authoritative published pricing pages ([nebius.com/prices](https://nebius.com/prices)). Transparently distinguishes On-Demand vs Preemptible and GPU-hour vs Instance-hour units.
+4. **Run & Cost Passport**: A certified, cryptographically sealed compliance manifest featuring SHA-256 integrity hashing, full chain-of-custody audit logs, and downloadable standalone HTML/JSON exports.
 
 ---
 
@@ -29,279 +32,214 @@ Training and serving modern Large Language Models (e.g. NVIDIA Nemotron, Llama 3
                                         /                                             \
            +--------------------------------------------+            +--------------------------------------------+
            |               GPU RunGuard                 |            |               FinOps Engine                |
-           |    - Dockerfile & Image Best Practices     |            |    - Deterministic GPU Spend: C_GPU        |
+           |    - Dockerfile & NVIDIA Container Runtime |            |    - Deterministic GPU Spend: C_GPU        |
            |    - Dependencies & PyTorch/CUDA Matrix    |            |    - Token Inference Cost: C_API           |
            |    - Cluster Workload Config (/dev/shm)    |            |    - Baseline vs Alternative Comparison    |
            |    - Diagnostic Log Analyzer (CUDA OOM)    |            |    - Verified Published Price Sources      |
-           |    - Deterministic VRAM & KV-Cache Sizer   |            |    - Waste Detection (Overprovisioning)    |
+           |    - Mathematical VRAM & KV-Cache Sizer    |            |    - On-Demand vs Preemptible Spot         |
+           |    - Hardware FP8 Feasibility Checker      |            |    - Empirical Telemetry vs Estimates      |
            +--------------------------------------------+            +--------------------------------------------+
                                         \                                             /
                                          \                                           /
                                   +-------------------------------------------------------------+
-                                  |                   Agentic Diagnostic Core                   |
+                                  |                 Honest Agentic Diagnostic Core              |
                                   |                                                             |
                                   |  +------------------------+     +------------------------+  |
                                   |  |  Nebius Token Factory  |     |   Tavily AI Search     |  |
-                                  |  |  (NVIDIA Nemotron 70B) |     |  (Technical Evidence)  |  |
+                                  |  |  (NVIDIA Nemotron 30B) |     |  (Technical Evidence)  |  |
                                   |  +------------------------+     +------------------------+  |
+                                  |  - verifyInference Probe        - Throttling-Aware 429   |
+                                  |  - Input Sanitization Boundary  - Stale Timestamp Policy |
                                   +-------------------------------------------------------------+
                                                                  |
                                                                  v
                                   +-------------------------------------------------------------+
-                                  |                 Run & Cost Passport                         |
+                                  |               Run & Cost Passport (SHA-256)                 |
                                   |  - PASS / FAIL / UNKNOWN Status Assurance                   |
                                   |  - Static vs Runtime Test Separation                        |
-                                  |  - Unified Patch Diff (Approval & Re-verification State)    |
-                                  |  - Downloadable Manifest (Certified HTML & JSON)            |
+                                  |  - Closed-Loop Patch Re-Verification Verification           |
+                                  |  - Cryptographic SHA-256 Integrity Seal                     |
+                                  |  - Standalone Certified HTML & JSON Exports                 |
                                   +-------------------------------------------------------------+
 ```
 
 ---
 
-## 3. Design System & Visual Identity
+## 3. Enterprise Design System & Visual Identity
 
-VARANASI features an original enterprise design system inspired by **Nebius cloud infrastructure** and accented with signature **NVIDIA green** compute highlights:
+VARANASI implements a clean, premium enterprise aesthetic inspired by NVIDIA and modern infrastructure engineering:
 
-### Core Color Palette
-- **Foundations**:
-  - Main App Background: `#071521` (`bg-app`)
-  - Secondary Background: `#0B1722` (`bg-surface-secondary`)
-  - Elevated Surface: `#101F2C` (`bg-surface-elevated`)
-  - Card Surface: `#122432` (`bg-surface-card`)
-  - Input & Code Surface: `#0A1823` (`bg-surface-input`)
-- **Nebius-Inspired Platform Accents**:
-  - Primary Cyan: `#25C6D8` (`nebius-cyan`) — Navigation, primary interactive elements, external links
-  - Platform Teal: `#21B7B0` (`nebius-teal`) — System connectivity, auxiliary pills
-  - Bright Blue: `#3978FF` (`nebius-blue`) — Secondary badges, subtle gradients
-  - Soft Cyan: `#8AEAF0` (`nebius-soft`) — Interactive focus and hover highlights
-- **Selective NVIDIA Compute Accents**:
-  - NVIDIA Green: `#76B900` (`nvidia-green`) — Compute metrics, VRAM headroom gauge, validated PASS status
-  - Muted Green Surface: `#172914` (`nvidia-surface`) — Status badges, verified source indicators
-  - Green Border: `#385D22` (`nvidia-border`) — Verified audit containers, patch addition lines
-- **Typography & Status**:
-  - High-Contrast Primary Text: `#F4F8FC` (`text-primary`)
-  - Secondary Text: `#B6C7D5` (`text-secondary`)
-  - Muted Labels: `#8297A8` (`text-muted`)
-  - Status Indicators: Success (`#76B900`), Warning (`#F5B94C`), Error (`#FF6B70`), Information (`#38BDF8`)
+### Core Color Foundations
+- **Primary Background**: Warm Cream `#F7F5EF` (`--bg-app`)
+- **Secondary Background**: Soft Muted Cream `#F0EEE6` (`--bg-secondary`)
+- **Card Surface**: Crisp White Card `#FFFDF8` (`--bg-card`)
+- **Standard Border**: Muted Sand `#E4E1D7` (`--border-standard`)
+- **Subtle Divider**: Light Sand `#ECE9E0` (`--border-subtle`)
+- **Border Hover**: Warm Neutral `#D5D1C5` (`--border-hover`)
 
-### Design Architecture
-- **Centralized CSS Variables & Tailwind Tokens**: Zero arbitrary scattered hex codes; all components consume centralized semantic tokens.
-- **Micro-Interactions**: Ambient gradient glows (`shadow-nebius-glow`, `shadow-nvidia-glow`), refined glassmorphism (`backdrop-blur-md`), and technical grid overlays (`bg-grid-pattern`).
-- **Zero Horizontal Overflow**: Fully responsive across mobile (390px), tablet (768px), laptop (1024px), desktop (1280px), and ultrawide (1440px+).
+### NVIDIA Green Compute Accents
+- **Signature NVIDIA Green**: `#76B900` (`--nvidia-green`) — Primary CTA buttons, VRAM capacity gauges, active tabs
+- **NVIDIA Hover**: `#659F00` (`--nvidia-hover`) — Interactive button hover states
+- **NVIDIA Light Surface**: `#EFF6E4` (`--nvidia-surface`) — High-contrast status badges, verified tags
+- **NVIDIA Dark Accent**: `#294500` (`--nvidia-dark`) — High-readability badge labels and heading accents
+
+### Typography & Hierarchy
+- **Font Stack**: `Inter`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `sans-serif`
+- **High-Contrast Text**: Charcoal `#242820` (`--text-primary`)
+- **Secondary Text**: Muted Charcoal `#64685F` (`--text-secondary`)
+- **Muted Labels**: Soft Grey `#878C82` (`--text-muted`)
+- **Tabular Numerals**: Monospace numerals for financial calculations, VRAM allocations, and timestamps.
+- **Accessibility**: Built-in support for `@media (prefers-reduced-motion: reduce)` and responsive overflow guards.
 
 ---
 
-## 4. Mandatory Hackathon Integrations
+## 4. Honest API Connectivity & Status Lifecycle
 
-### A. Nebius Token Factory & NVIDIA Open-Source Model
-- **Endpoint**: OpenAI-compatible `/chat/completions` API via `https://api.tokenfactory.nebius.com/v1/`
-- **Model**: `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` (or `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF`)
-- **Role in VARANASI**: Contextual root-cause reasoning over sanitized execution traces and cluster manifests.
-- **Privacy & Safety Boundary**:
-  - The model **never** receives unfiltered raw repositories or environment files.
-  - All input traces pass through `src/lib/sanitizer.ts`, which masks Bearer tokens, `sk-...` / `neb-...` keys, and credential pairs.
-  - The model proposes explanations and remediation patches, but **never** determines whether a test has passed. PASS/FAIL states remain strictly deterministic.
+VARANASI enforces strict truthfulness regarding cloud API connectivity:
 
-### B. Tavily Search API
-- **Endpoint**: `https://api.tavily.com/search`
-- **Role in VARANASI**: Real-time retrieval of official documentation from authoritative sources (`pytorch.org`, `docs.nvidia.com`, `github.com`, `nebius.com`).
-- **Evidence Separation**: Retrieved source URLs, titles, and snippets are explicitly separated in the UI from the LLM’s interpretation.
+### Status State Machine
+- `CHECKING`: Initial probe in-flight. Displayed during initial cold starts and manual refreshes.
+- `NOT_CONFIGURED`: The required API key is confirmed absent or blank on the server.
+- `CONFIGURED`: The key is present on the server, but live connectivity has not yet been verified.
+- `CONNECTED`: Confirmed active connection verified via a live network request within the valid cache window.
+- `STALE`: A previously verified connection whose timestamp is older than the cache TTL or where intermittent throttling occurred while a historical timestamp exists in `localStorage`.
+- `RATE_LIMITED`: The external API returned HTTP 429 without a prior verified session.
+- `DEGRADED`: The service is partially responsive but experiencing high latency or rate limits.
+- `FAILED`: An actual network error, authentication rejection (HTTP 401/403), or 5xx error occurred.
+- `UNKNOWN`: The status could not be conclusively determined.
+
+### Catalogue Reachability vs Real Inference Probe (`verifyInference`)
+- Standard health checks call `GET /models` to verify token factory catalogue reachability.
+- Passing `verifyInference=true` sends an active 1-token generation probe to `/chat/completions` using `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`, confirming actual generation capability and quota.
+- Base URL is strictly pinned to official Nebius Token Factory: `https://api.tokenfactory.nebius.com/v1`.
 
 ---
 
-## 5. Deterministic Core & Formulas
+## 5. Deterministic Engineering Core & Formulas
 
-Critical calculations and verification states are computed mathematically without LLM dependencies.
+All mission-critical calculations run deterministically in TypeScript without LLM dependency.
 
-### GPU Workload Cost Formula
+### GPU Workload Spend Formula ($C_{GPU}$)
 - **GPU-hour unit**:
   $$C_{\text{GPU}} = \sum (\text{GPU Count} \times \text{Billed Hours} \times \text{Price per GPU-hour}) + C_{\text{storage}} + C_{\text{network}}$$
 - **Instance-hour unit** (e.g. 8-GPU AWS instances):
   $$C_{\text{GPU}} = \sum (\text{Instance Count} \times \text{Billed Hours} \times \text{Price per Instance-hour}) + C_{\text{storage}} + C_{\text{network}}$$
 
-### Model Inference Token Cost Formula
+### Model Inference Token Cost Formula ($C_{API}$)
 $$C_{\text{API}} = \frac{\text{Input Tokens} \times \text{Input Rate} + \text{Output Tokens} \times \text{Output Rate}}{1,000,000}$$
 
-### Cost Reduction Delta
+### Margin Delta ($\Delta C$)
 $$\Delta C = \text{Baseline Cost} - \text{Alternative Cost}$$
 $$\text{Percentage Difference} = \frac{\Delta C}{\text{Baseline Cost}} \times 100\%$$
 
-### Audited Nebius Pricing Standards (https://nebius.com/prices)
-- **NVIDIA H100 SXM5 80GB**: On-Demand `$4.50`/GPU-hr | Preemptible Spot from `$0.79`/GPU-hr
-- **NVIDIA H200 SXM 141GB**: On-Demand `$5.40`/GPU-hr | Preemptible Spot from `$0.79`/GPU-hr
+### Audited Official Nebius Cloud Rates ([nebius.com/prices](https://nebius.com/prices))
+- **NVIDIA H100 SXM5 80GB**: On-Demand `$4.50`/GPU-hr | Dynamic Spot from `$0.79`/GPU-hr
+- **NVIDIA H200 SXM 141GB**: On-Demand `$5.40`/GPU-hr | Dynamic Spot from `$0.79`/GPU-hr
 - **NVIDIA L40S 48GB**: On-Demand `$1.55`/GPU-hr (Intel) / `$1.82` (AMD) | Preemptible `$0.74`/GPU-hr (Intel) / `$0.90` (AMD)
-- **Unconfirmed Rates (A100, B200 on-demand)**: Marked as `UNKNOWN` and require user-supplied rate override.
-- **Strict Verification Guarantee**: Savings are marked `VERIFIED_PUBLISHED` only when both baseline and proposed rates match authoritative published sources. Never claim cost savings based on unverified prices or unmeasured workload performance.
+- **Unconfirmed Rates (A100, Blackwell B200 on-demand)**: Marked `UNKNOWN` and require user overrides.
+- **Verification Guarantee**: Savings are marked `VERIFIED_PUBLISHED` only when both baseline and candidate rates match authoritative published sources. Never claim cost savings based on unverified prices or unmeasured workload performance.
 
-### Deterministic VRAM & KV-Cache Sizing
-- **Weight Memory (GiB)**: $\text{Params (Billions)} \times 10^9 \times \text{Bytes per Param} / 1024^3$
-  - FP32: 4 bytes, FP16/BF16: 2 bytes, FP8: 1 byte, INT4: 0.5 bytes.
-- **KV Cache Memory (GiB)**: Multi-layer Grouped-Query Attention (GQA) tensor buffer scaled by sequence context length and concurrency batch size.
-- **CUDA Runtime Overhead**: 1.6 to 2.2 GiB reserved buffer for CUDA context, NCCL communication buffers, and CUDA graph allocation.
-
-### State Assignment Contract
-- **PASS**: The check or test was executed and verified compliant against documented standards.
-- **FAIL**: A fatal configuration flaw, missing resource, or runtime failure signature was detected.
-- **UNKNOWN**: Input files or logs were omitted. **A test that was not executed is NEVER marked PASS.**
-
----
-
-## 6. Repository Structure
-
-```
-├── .env.example                     # Reference environment variables
-├── .gitignore                       # Git exclusions (credentials, node_modules, .next)
-├── LICENSE                          # MIT License
-├── package.json                     # Next.js 14, React 18, Tailwind, Vitest
-├── tsconfig.json                    # Strict TypeScript configuration
-├── tailwind.config.ts               # Custom enterprise color palette
-├── vitest.config.ts                 # Vitest runner config
-├── src/
-│   ├── types/                       # TypeScript interfaces
-│   │   ├── runguard.ts              # Preflight check types, findings, diffs
-│   │   ├── finops.ts                # FinOps cost models & catalog types
-│   │   ├── passport.ts              # Run & Cost Passport schema
-│   │   └── api.ts                   # Nebius & Tavily request/response schemas
-│   ├── lib/
-│   │   ├── constants.ts             # Verified GPU catalog & CUDA-PyTorch matrix
-│   │   ├── sanitizer.ts             # Secret redaction & log context boundary
-│   │   ├── preflight/               # Deterministic validation engines
-│   │   │   ├── dockerfile.ts        # NVIDIA container runtime checks
-│   │   │   ├── dependencies.ts      # PyTorch, CUDA, Flash-Attn ABI checks
-│   │   │   ├── workload-config.ts   # K8s / Slurm / Compose shared memory (/dev/shm)
-│   │   │   ├── log-analyzer.ts      # CUDA OOM, NCCL timeout, SIGBUS detection
-│   │   │   ├── vram-estimator.ts    # Mathematical VRAM & KV-cache estimator
-│   │   │   └── engine.ts            # Aggregates preflight & generates diff patch
-│   │   ├── finops/
-│   │   │   └── calculator.ts        # Pure deterministic C_GPU & C_API calculator
-│   │   ├── nebius/
-│   │   │   └── client.ts            # Nebius Token Factory NVIDIA LLM client
-│   │   ├── tavily/
-│   │   │   └── client.ts            # Tavily technical search client
-│   │   ├── passport/
-│   │   │   └── generator.ts         # Generates Passport JSON and standalone HTML
-│   │   └── fixtures/
-│   │       └── demo-workloads.ts    # Built-in judge evaluation fixtures
-│   ├── app/
-│   │   ├── api/                     # Server-side API endpoints
-│   │   │   ├── status/route.ts      # Health & credential check (no leaked secrets)
-│   │   │   ├── preflight/route.ts   # Deterministic preflight execution
-│   │   │   ├── diagnose/route.ts    # Nebius + Tavily reasoning pipeline
-│   │   │   ├── tavily-search/route.ts # Direct Tavily search route
-│   │   │   ├── finops/calculate/route.ts # Pure mathematical FinOps calculator
-│   │   │   └── passport/route.ts    # Passport exporter (JSON & HTML download)
-│   │   ├── globals.css              # Dark theme styling & scrollbars
-│   │   ├── layout.tsx               # Root application layout
-│   │   └── page.tsx                 # Unified dashboard & tabs controller
-│   └── components/
-│       ├── Navbar.tsx               # Header, API status indicators, fixture loader
-│       ├── tabs/
-│       │   ├── DashboardTab.tsx     # Overview dashboard & system status
-│       │   ├── RunGuardTab.tsx      # Preflight checks, logs, VRAM gauge
-│       │   ├── DiagnoseTab.tsx      # Nebius Nemotron & Tavily citations
-│       │   ├── PatchReviewTab.tsx   # Reviewable diff viewer & approval workflow
-│       │   ├── FinOpsTab.tsx        # Compute & token cost comparisons
-│       │   └── PassportTab.tsx      # Certified Run & Cost Passport
-│       └── ui/
-│           ├── StatusBadge.tsx      # PASS / FAIL / UNKNOWN badges
-│           ├── DiffViewer.tsx       # Unified before/after syntax diff
-│           └── CitationCard.tsx     # Live Tavily documentation cards
-└── src/__tests__/                   # 23 Unit tests
-    ├── finops.test.ts               # GPU & token cost formulas, waste detection
-    ├── preflight.test.ts            # Docker, deps, configs, logs, VRAM calculations
-    ├── sanitizer.test.ts            # API key & secret redaction
-    ├── external-apis.test.ts        # Missing key handling & malformed responses
-    └── passport.test.ts             # Passport schema integrity & HTML export
-```
+### Deterministic VRAM Allocation Model
+- **Weight Memory (GiB)**:
+  $$\text{VRAM}_{\text{weight}} = \frac{\text{Params} \times 10^9 \times \text{BytesPerWeight}}{1024^3 \times N_{\text{GPU}}}$$
+  *(FP32: 4B, FP16/BF16: 2B, FP8: 1B, INT4: 0.5B)*
+- **KV-Cache Memory (GiB)**:
+  $$\text{VRAM}_{\text{KV}} = \frac{2 \times \text{Layers} \times \text{Dim}_{\text{KV}} \times \text{BytesPerElement} \times \text{SeqLen} \times \text{BatchSize}}{1024^3 \times N_{\text{GPU}}}$$
+  *(Grouped-Query Attention scaling factor $\sim 0.25$ for 70B+ architectures)*
+- **CUDA & Runtime Overhead**: 1.6 GiB (single GPU) or 2.2 GiB (multi-GPU with NCCL communicator rings).
+- **Architecture Constraints**: Native FP8 Tensor Cores are strictly validated: supported on Hopper (H100/H200), Ada Lovelace (L40S), and Blackwell (B200); flagged as unsupported on Ampere (A100).
 
 ---
 
-## 7. Installation & Local Setup
+## 6. Closed-Loop AI Fix Workflow
 
-### Prerequisites
-- **Node.js**: v18.17+ or v20+ (tested on Node v26.3.1)
-- **NPM**: v9+ or v10+
+VARANASI eliminates silent mutations and arbitrary code execution through an auditable closed-loop verification pipeline:
 
-### Step 1: Clone and Install
-```bash
-git clone https://github.com/your-username/varanasi-gpu-runguard.git
-cd varanasi-gpu-runguard
-npm install
+```
+[Flaw Detected] ──> [Deterministic Patch Generated] ──> [Explicit Human Approval]
+                          │                                      │
+                          ▼                                      ▼
+             [Unified .patch Download]             [Applied to In-Memory Buffer]
+                                                                 │
+                                                                 ▼
+                                                  [Deterministic Re-Verification]
+                                                                 │
+                                                                 ▼
+                                                    [Status: RE_VERIFIED (Pass)]
 ```
 
-### Step 2: Configure Environment Variables
-Copy `.env.example` to `.env.local`:
-```bash
-cp .env.example .env.local
-```
+1. **GENERATED**: Deterministic rules construct a minimal unified diff for configuration errors (e.g. adding `shm_size: '16gb'`, `ipc: 'host'`, or NVIDIA runtime environment variables).
+2. **APPROVED**: User inspects the exact diff and explicitly clicks "Approve Patch".
+3. **APPLIED**: Patch is applied strictly to the client-side in-memory configuration buffer. Zero arbitrary code execution or unprompted host file mutation.
+4. **RE_VERIFIED**: The deterministic validator re-evaluates the patched buffer to ensure the targeted flaw is resolved without regressions (`isRemediated: true`).
+5. **Exportable Asset**: Both the complete patched configuration file and the standalone unified `.patch` file can be downloaded.
 
-Edit `.env.local`:
-```env
-# Nebius Token Factory API Key
-NEBIUS_API_KEY=your_actual_nebius_api_key_here
-NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1
-NEBIUS_MODEL=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+---
 
-# Tavily Technical Search API Key
-TAVILY_API_KEY=your_actual_tavily_api_key_here
-```
-> **Honest Fallback Note**: If API keys are omitted, VARANASI will transparently inform you in the UI. The deterministic preflight engine, VRAM sizer, FinOps margin calculator, patch review, and Passport generation remain 100% functional without external keys.
+## 7. Run & Cost Passport with SHA-256 Integrity
 
-### Step 3: Run Unit Tests
+The **Run & Cost Passport** provides an enterprise-ready audit manifest for cloud AI workloads:
+- **Cryptographic Seal**: Calculates a deterministic **SHA-256** hash across the canonical passport payload (identity, environment, deterministic check count, and FinOps metrics).
+- **Chain of Custody**: Every step records actor attribution (`SYSTEM_DETERMINISTIC`, `NEBIUS_NVIDIA_LLM`, `TAVILY_SEARCH`, `USER_APPROVAL`) and ISO-8601 timestamps.
+- **Dual Export Formats**:
+  - **Standalone Certified HTML**: Self-contained HTML report with embedded styles, SHA-256 seal, and verification stamps.
+  - **Structured JSON Schema**: Machine-readable payload for CI/CD pipelines and compliance archives.
+
+---
+
+## 8. Test Suite & Verification Results
+
+VARANASI is backed by 38 automated unit tests covering all deterministic logic:
+
 ```bash
 npm test
 ```
-Runs 29 unit tests across GPU cost calculations (on-demand vs preemptible, GPU-hour vs instance-hour), token pricing, unverified price handling, source attribution, custom validation rules, preflight checks, VRAM calculations, secret sanitization, and passport generation.
 
-### Step 4: Run Development Server
+### Verified Test Suites:
+- `src/__tests__/status.test.ts` (9 tests): Status state machine, cold starts, client timestamps, `verifyInference` probe, and 429 throttling handling.
+- `src/__tests__/finops.test.ts` (9 tests): GPU cost formulas, instance-hour conversion, On-Demand vs Preemptible rates, token pricing, waste detection.
+- `src/__tests__/preflight.test.ts` (10 tests): Dockerfile checks, PyTorch/CUDA compatibility, `/dev/shm` shared memory checks, CUDA OOM log parsing, VRAM estimation.
+- `src/__tests__/passport.test.ts` (2 tests): Passport schema assembly, audit trail recording, secret exclusion, SHA-256 integrity hash verification, standalone HTML export.
+- `src/__tests__/sanitizer.test.ts` (4 tests): Secret masking for Bearer tokens, `sk-...` / `neb-...` keys, and credential pairs.
+- `src/__tests__/external-apis.test.ts` (4 tests): Handling missing keys, network timeouts, and graceful degradation.
+
+---
+
+## 9. Quickstart & Deployment
+
+### Local Development
 ```bash
+# 1. Clone repository
+git clone https://github.com/ganesh-pirinti/VARANASI_NVIDIA-X-NEBIUS.git
+cd VARANASI_NVIDIA-X-NEBIUS
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+cp .env.example .env.local
+# Set NEBIUS_API_KEY and TAVILY_API_KEY in .env.local
+
+# 4. Run test suite
+npm test
+
+# 5. Start development server
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Step 5: Production Build & Run
+### Production Build
 ```bash
 npm run build
 npm start
 ```
 
----
-
-## 8. Demonstration Guide for Hackathon Judges
-
-To evaluate VARANASI without supplying custom cluster files:
-1. Click **Load Demo Workload** in the top navigation bar.
-2. Select any of the 4 built-in realistic evaluation fixtures:
-   - **vLLM 70B: CUDA OOM & Missing Shared Memory (`/dev/shm`)**: Demonstrates PyTorch shared memory exhaustion and VRAM overflow on single H100 with automated Kubernetes remediation patch.
-   - **DeepSpeed ZeRO-3: Multi-Node NCCL Communication Timeout**: Demonstrates distributed collective watchdog timeout and network interface tuning.
-   - **FlashAttention Build Failure: Missing Ninja**: Demonstrates unpinned dependencies, missing compilers, and architectural compute capability mismatches.
-   - **Production Ready: 8x H100 SXM vLLM Multi-GPU Spec**: Compliant reference configuration passing all static and runtime tests.
-3. Observe:
-   - **GPU RunGuard**: Static checks distinguished from runtime test results, PASS/FAIL/UNKNOWN badges, and VRAM sizing gauges.
-   - **Diagnose & Investigate**: NVIDIA Nemotron model reasoning alongside live Tavily search citations.
-   - **Patch Review**: Unified diff viewer with explicit human approval step (`Generated -> Approved -> Applied -> Re-verified`).
-   - **FinOps Engine**: Baseline vs Nebius Cloud cost comparison with transparent formulas ($\Delta C$) and verified source links.
-   - **Run & Cost Passport**: Standalone HTML and JSON export with full audit trail.
+### Deploy to Vercel
+```bash
+vercel --prod --yes
+```
 
 ---
 
-## 9. Security & Privacy Guarantees
+## 10. License
 
-1. **Zero Secret Leakage**: All external API requests execute on the Next.js server runtime. No API keys (`NEBIUS_API_KEY`, `TAVILY_API_KEY`) are ever bundled in client-side JavaScript or returned in API responses.
-2. **Deterministic Preflight Isolation**: Deterministic preflight evaluation and FinOps calculations do not send any user code or logs to external LLMs.
-3. **Payload Sanitization**: When launching the optional diagnostic investigation, all text is scrubbed using regex pattern matchers that redact API keys, Bearer tokens, and sensitive key-value pairs before calling Nebius Token Factory.
-4. **No Arbitrary Code Execution**: Remediation patches are presented as reviewable text diffs. VARANASI never executes arbitrary uploaded scripts or mutates cloud clusters without explicit user approval.
-
----
-
-## 10. Known Limitations
-
-- **Price Verification**: Reference prices are gathered from published cloud on-demand pricing sheets (Nebius, AWS, NVIDIA DGX Cloud) as of February 2026. Private enterprise volume discounts and spot availability fluctuate.
-- **Hardware Telemetry**: Static analysis evaluates declared resource requests and configurations. Real-time dynamic GPU temperature, thermal throttling, and hardware memory bus degradation require live host node agents.
-- **LLM Reasoning**: Model suggestions provided by NVIDIA Nemotron are consultative and require human review before production deployment.
-
----
-
-## 11. License
-
-This project is licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE). Built for the Nebius × NVIDIA Global AI Hackathon 2026.

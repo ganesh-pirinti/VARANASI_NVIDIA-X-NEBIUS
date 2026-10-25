@@ -214,8 +214,8 @@ describe("System Status API Route (/api/status)", () => {
     const res = await GET(req);
     const data = await res.json();
 
-    // Must retain CONNECTED status labelled STALE with the timestamp provided
-    expect(data.tavilyStatus).toBe("CONNECTED");
+    // Must return STALE status with the timestamp provided
+    expect(data.tavilyStatus).toBe("STALE");
     expect(data.tavilyIsStale).toBe(true);
     expect(data.tavilyStaleTimestamp).toBe(clientVerifiedTime);
     expect(data.tavilyStatusCode).toBe(429);
@@ -261,6 +261,44 @@ describe("System Status API Route (/api/status)", () => {
     expect(data.tavilyStatusCode).toBe(200);
     expect(data.tavilySearchAvailable).toBe(true);
     expect(data.tavilyIsStale).toBeFalsy();
+  });
+
+  it("verifies real Nebius model generation when verifyInference=true returns 200 OK", async () => {
+    process.env.NEBIUS_API_KEY = "mock-nebius-key";
+    process.env.TAVILY_API_KEY = "tvly-mock-key";
+    process.env.NEBIUS_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
+
+    let inferenceCalled = false;
+    global.fetch = vi.fn().mockImplementation((url: string | URL | Request) => {
+      const urlStr = url.toString();
+      if (urlStr.includes("/chat/completions")) {
+        inferenceCalled = true;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            choices: [{ message: { content: "pong" } }],
+          }),
+        });
+      }
+      if (urlStr.includes("tavily.com")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ key: { usage: 1 } }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
+    const req = new NextRequest("http://localhost:3000/api/status?verifyInference=true");
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(inferenceCalled).toBe(true);
+    expect(data.nebiusStatus).toBe("CONNECTED");
+    expect(data.nebiusInferenceAvailable).toBe(true);
+    expect(data.nebiusInferenceTested).toBe(true);
   });
 
   it("handles network timeout gracefully without crashing", async () => {

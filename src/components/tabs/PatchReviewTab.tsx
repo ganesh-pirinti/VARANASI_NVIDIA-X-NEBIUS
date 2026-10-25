@@ -118,10 +118,37 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
           <div className="space-y-1">
             <strong className="text-text-primary">Execution Safety Protocol:</strong>
             <p className="text-[12px] leading-[1.5] text-text-secondary">
-              VARANASI adheres to strict zero-silent-mutation standards. Patches require explicit human approval and are never executed directly on production systems. You may inspect the diff, download the patched asset, or apply it to re-test deterministic checks.
+              VARANASI adheres to strict zero-silent-mutation standards. Patches are applied strictly to the in-memory configuration buffer and are never executed directly on production systems. Zero arbitrary code execution on host. You may inspect the diff, download the unified .patch, or run independent closed-loop verification.
             </p>
           </div>
         </div>
+
+        {/* Closed-Loop Verification Result Banner */}
+        {proposedPatch.status === "RE_VERIFIED" && (
+          <div
+            className={`rounded-[8px] border p-4 text-[13px] flex items-start gap-3 animate-fade-in ${
+              proposedPatch.isRemediated
+                ? "border-nvidia-green/40 bg-nvidia-surface text-nvidia-dark"
+                : "border-status-warning/40 bg-[#FEF3C7] text-status-warning"
+            }`}
+          >
+            {proposedPatch.isRemediated ? (
+              <ShieldCheck className="h-5 w-5 text-nvidia-green shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle className="h-5 w-5 text-status-warning shrink-0 mt-0.5" />
+            )}
+            <div>
+              <strong className="block font-semibold">
+                {proposedPatch.isRemediated
+                  ? "Closed-Loop Verification Passed (Target Issue Remediated)"
+                  : "Closed-Loop Verification Incomplete"}
+              </strong>
+              <div className="text-[12px] mt-0.5 leading-relaxed">
+                {proposedPatch.reverificationNotes || "Re-evaluated against deterministic static and runtime rules."}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Audit Lifecycle Progress */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[12px] font-mono">

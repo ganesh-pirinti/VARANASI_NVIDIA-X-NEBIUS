@@ -29,20 +29,23 @@ export interface ServiceCheckResult {
   statusCode?: number;
   error?: string;
   modelAvailable?: boolean;
+  inferenceAvailable?: boolean;
+  inferenceTested?: boolean;
   searchAvailable?: boolean;
   isStale?: boolean;
   staleTimestamp?: string;
 }
 
 /**
- * Validates Nebius Token Factory API connectivity using the official /models endpoint.
- * CONNECTED is returned only after an authenticated HTTP 200 response.
+ * Validates Nebius Token Factory API connectivity.
+ * Distinguishes catalogue presence (/models) from actual token generation (/chat/completions).
  */
 export async function checkNebius(
   apiKey: string,
   baseUrl: string,
   configuredModel: string,
-  clientVerifiedTimestamp?: string | null
+  clientVerifiedTimestamp?: string | null,
+  verifyInference = false
 ): Promise<ServiceCheckResult> {
   if (!apiKey || apiKey.length === 0) {
     return {
@@ -52,6 +55,84 @@ export async function checkNebius(
     };
   }
 
+  // 1. Explicit inference test if requested
+  if (verifyInference) {
+    let inferenceTimeoutId: NodeJS.Timeout | null = null;
+    try {
+      const controller = new AbortController();
+      inferenceTimeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+      const res = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: configuredModel,
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 1,
+          temperature: 0,
+        }),
+        signal: controller.signal,
+      });
+
+      const statusCode = res.status;
+      if (res.ok) {
+        return {
+          status: "CONNECTED",
+          statusCode,
+          modelAvailable: true,
+          inferenceAvailable: true,
+          inferenceTested: true,
+        };
+      }
+
+      if (statusCode === 401 || statusCode === 403) {
+        return {
+          status: "FAILED",
+          statusCode,
+          modelAvailable: false,
+          inferenceAvailable: false,
+          inferenceTested: true,
+          error: `Nebius authentication failed (HTTP ${statusCode}): Invalid or expired API key.`,
+        };
+      }
+
+      if (statusCode === 429) {
+        return {
+          status: "RATE_LIMITED",
+          statusCode,
+          modelAvailable: false,
+          inferenceAvailable: false,
+          inferenceTested: true,
+          error: `Nebius inference endpoint rate limited (HTTP 429).`,
+        };
+      }
+
+      return {
+        status: "FAILED",
+        statusCode,
+        modelAvailable: false,
+        inferenceAvailable: false,
+        inferenceTested: true,
+        error: `Nebius inference service returned HTTP ${statusCode}.`,
+      };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return {
+        status: "FAILED",
+        modelAvailable: false,
+        inferenceAvailable: false,
+        inferenceTested: true,
+        error: `Nebius inference connection failed: ${msg}`,
+      };
+    } finally {
+      if (inferenceTimeoutId) clearTimeout(inferenceTimeoutId);
+    }
+  }
+
+  // 2. Catalogue check via /models
   let timeoutId: NodeJS.Timeout | null = null;
   try {
     const controller = new AbortController();
@@ -79,12 +160,16 @@ export async function checkNebius(
           status: "CONNECTED",
           statusCode,
           modelAvailable: true,
+          inferenceAvailable: true,
+          inferenceTested: false,
         };
       } else {
         return {
           status: "CONFIGURED",
           statusCode,
           modelAvailable: false,
+          inferenceAvailable: false,
+          inferenceTested: false,
           error: `Connected to Nebius catalogue (HTTP 200), but model '${configuredModel}' was not found in active catalogue (${models.length} models available).`,
         };
       }
@@ -103,12 +188,12 @@ export async function checkNebius(
       const rateLimitError = `Rate limit reached (HTTP 429): Nebius models endpoint throttled.`;
       if (clientVerifiedTimestamp) {
         return {
-          status: "CONNECTED",
+          status: "STALE",
           statusCode,
           isStale: true,
           staleTimestamp: clientVerifiedTimestamp,
           modelAvailable: true,
-          error: `${rateLimitError} Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
+          error: `${rateLimitError} Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
         };
       }
       return {
@@ -125,12 +210,12 @@ export async function checkNebius(
 
     if (clientVerifiedTimestamp) {
       return {
-        status: "CONNECTED",
+        status: "STALE",
         statusCode,
         isStale: true,
         staleTimestamp: clientVerifiedTimestamp,
         modelAvailable: true,
-        error: `${serviceError} Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
+        error: `${serviceError} Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
       };
     }
 
@@ -148,11 +233,11 @@ export async function checkNebius(
 
     if (clientVerifiedTimestamp) {
       return {
-        status: "CONNECTED",
+        status: "STALE",
         isStale: true,
         staleTimestamp: clientVerifiedTimestamp,
         modelAvailable: true,
-        error: `${netError}. Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
+        error: `${netError}. Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
       };
     }
 
@@ -257,10 +342,10 @@ export async function checkTavily(
     if (clientVerifiedTimestamp && lastTavilyUsageResult.status === "RATE_LIMITED") {
       return {
         ...lastTavilyUsageResult,
-        status: "CONNECTED",
+        status: "STALE",
         isStale: true,
         staleTimestamp: clientVerifiedTimestamp,
-        error: `${lastTavilyUsageResult.error} Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
+        error: `${lastTavilyUsageResult.error} Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
       };
     }
     return lastTavilyUsageResult;
@@ -309,15 +394,15 @@ export async function checkTavily(
     if (statusCode === 429) {
       const rateLimitError = `Rate limit reached (HTTP 429): Tavily usage endpoint throttled due to request frequency.`;
       
-      // If a verified timestamp is provided by client/prior verification, retain CONNECTED as STALE
+      // If a verified timestamp is provided by client/prior verification, return STALE (never claim CONNECTED)
       if (clientVerifiedTimestamp) {
         const result: ServiceCheckResult = {
-          status: "CONNECTED",
+          status: "STALE",
           statusCode,
           isStale: true,
           staleTimestamp: clientVerifiedTimestamp,
           searchAvailable: true,
-          error: `${rateLimitError} Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}). Search workflow remains operational.`,
+          error: `${rateLimitError} Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}). Search workflow remains operational.`,
         };
         lastTavilyUsageResult = result;
         return result;
@@ -340,11 +425,11 @@ export async function checkTavily(
 
     if (clientVerifiedTimestamp) {
       const result: ServiceCheckResult = {
-        status: "CONNECTED",
+        status: "STALE",
         statusCode,
         isStale: true,
         staleTimestamp: clientVerifiedTimestamp,
-        error: `${serviceError} Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
+        error: `${serviceError} Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
       };
       lastTavilyUsageResult = result;
       return result;
@@ -365,10 +450,10 @@ export async function checkTavily(
 
     if (clientVerifiedTimestamp) {
       return {
-        status: "CONNECTED",
+        status: "STALE",
         isStale: true,
         staleTimestamp: clientVerifiedTimestamp,
-        error: `${netError}. Retaining verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
+        error: `${netError}. Historical verified connection (STALE: ${new Date(clientVerifiedTimestamp).toLocaleTimeString()}).`,
       };
     }
 
@@ -384,15 +469,16 @@ export async function checkTavily(
 export interface GetStatusOptions {
   forceRefresh?: boolean;
   verifySearch?: boolean;
+  verifyInference?: boolean;
   clientTavilyVerified?: string | null;
   clientNebiusVerified?: string | null;
 }
 
 export async function getSystemStatus(options: GetStatusOptions = {}): Promise<{ response: SystemStatusResponse; cached: boolean }> {
   const now = Date.now();
-  const { forceRefresh = false, verifySearch = false, clientTavilyVerified, clientNebiusVerified } = options;
+  const { forceRefresh = false, verifySearch = false, verifyInference = false, clientTavilyVerified, clientNebiusVerified } = options;
 
-  if (!forceRefresh && !verifySearch && cachedStatus && now - cachedStatus.timestamp < CACHE_TTL_MS) {
+  if (!forceRefresh && !verifySearch && !verifyInference && cachedStatus && now - cachedStatus.timestamp < CACHE_TTL_MS) {
     return { response: cachedStatus.data, cached: true };
   }
 
@@ -403,7 +489,7 @@ export async function getSystemStatus(options: GetStatusOptions = {}): Promise<{
 
   // Execute checks in parallel
   const [nebiusResult, tavilyResult] = await Promise.all([
-    checkNebius(nebiusKey, nebiusBaseUrl, configuredModel, clientNebiusVerified),
+    checkNebius(nebiusKey, nebiusBaseUrl, configuredModel, clientNebiusVerified, verifyInference),
     checkTavily(tavilyKey, verifySearch, clientTavilyVerified, forceRefresh),
   ]);
 
@@ -413,6 +499,8 @@ export async function getSystemStatus(options: GetStatusOptions = {}): Promise<{
     nebiusBaseUrl,
     nebiusModel: configuredModel,
     nebiusModelAvailable: nebiusResult.modelAvailable || false,
+    nebiusInferenceAvailable: nebiusResult.inferenceAvailable,
+    nebiusInferenceTested: nebiusResult.inferenceTested,
     nebiusError: nebiusResult.error,
     nebiusStatusCode: nebiusResult.statusCode,
     nebiusIsStale: nebiusResult.isStale,

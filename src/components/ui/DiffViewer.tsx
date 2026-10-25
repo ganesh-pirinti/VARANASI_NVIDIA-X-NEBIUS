@@ -28,6 +28,16 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadPatch = () => {
+    const blob = new Blob([diff], { type: "text/x-diff;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileName.replace(/^.*[\\/]/, "")}.patch`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const lines = diff.split(/\r?\n/);
 
   return (
@@ -53,12 +63,20 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
             <span>{copied ? "Copied" : "Copy Patch"}</span>
           </button>
           <button
-            onClick={handleDownload}
+            onClick={handleDownloadPatch}
             className="flex items-center gap-1.5 rounded-[6px] border border-border-standard bg-white px-3 py-1.5 text-[12px] font-semibold text-text-primary hover:bg-surface-secondary transition"
-            title="Download Patched File"
+            title="Download unified diff as .patch file"
           >
             <Download className="h-3.5 w-3.5 text-text-muted" />
-            <span>Download</span>
+            <span>.patch File</span>
+          </button>
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-1.5 rounded-[6px] border border-border-standard bg-white px-3 py-1.5 text-[12px] font-semibold text-text-primary hover:bg-surface-secondary transition"
+            title="Download Full Patched File"
+          >
+            <Download className="h-3.5 w-3.5 text-text-muted" />
+            <span>Patched File</span>
           </button>
         </div>
       </div>

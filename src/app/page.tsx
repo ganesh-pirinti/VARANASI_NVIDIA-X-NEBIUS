@@ -102,7 +102,7 @@ export default function Home() {
   const statusRequestIdRef = useRef(0);
 
   // Fetch system status with active caching, sequence tracking & on-demand refresh support
-  const fetchStatus = useCallback(async (bypassCache = false, verifySearch = false) => {
+  const fetchStatus = useCallback(async (bypassCache = false, verifySearch = false, verifyInference = false) => {
     const currentRequestId = ++statusRequestIdRef.current;
     if (bypassCache) setIsRefreshingStatus(true);
 
@@ -110,6 +110,7 @@ export default function Home() {
       const params = new URLSearchParams();
       if (bypassCache) params.set("refresh", "true");
       if (verifySearch) params.set("verifySearch", "true");
+      if (verifyInference) params.set("verifyInference", "true");
 
       // Check durable client storage for prior verified timestamps (survives Vercel cold starts)
       if (typeof window !== "undefined") {
@@ -406,13 +407,47 @@ export default function Home() {
   const handleReverifyPatch = async () => {
     setIsReverifying(true);
     try {
-      await handleRunPreflight();
+      // Execute fresh deterministic check on current working inputs buffer
+      const updatedReport = runPreflightChecks(inputs);
+      setPreflightReport(updatedReport);
+
       if (proposedPatch) {
-        setProposedPatch({
+        // Evaluate whether targeted flaw has been cleared
+        const remainingTargetFileFindings = updatedReport.findings.filter((f) =>
+          proposedPatch.targetFile.includes("workload-config")
+            ? f.id.includes("cfg-") || f.category === "SHARED_MEMORY"
+            : proposedPatch.targetFile.includes("Dockerfile")
+            ? f.id.includes("dock-") || f.category === "DOCKER_CONTAINER"
+            : f.id.includes("dep-") || f.category === "DEPENDENCIES_CUDA"
+        );
+
+        const isRemediated = remainingTargetFileFindings.length === 0;
+        const reverificationNotes = isRemediated
+          ? `Closed-loop deterministic verification passed. Targeted issue in ${proposedPatch.targetFile} is completely resolved.`
+          : `Re-verification detected ${remainingTargetFileFindings.length} unresolved finding(s).`;
+
+        const updatedPatch: ProposedPatch = {
           ...proposedPatch,
           status: "RE_VERIFIED",
           verifiedAt: new Date().toISOString(),
-        });
+          isRemediated,
+          reverificationNotes,
+        };
+
+        setProposedPatch(updatedPatch);
+
+        // Update passport audit trail with closed-loop verification event
+        if (passport) {
+          const pass = generateRunCostPassport({
+            projectName: inputs.projectName,
+            targetGpu: inputs.targetGpu,
+            gpuCount: inputs.gpuCount,
+            preflightReport: updatedReport,
+            finopsComparison: comparisonResult || undefined,
+            proposedPatch: updatedPatch,
+          });
+          setPassport(pass);
+        }
       }
     } finally {
       setIsReverifying(false);
@@ -538,7 +573,8 @@ export default function Home() {
             systemStatus={systemStatus}
             setActiveTab={setActiveTab}
             onRefreshStatus={() => fetchStatus(true)}
-            onVerifySearch={() => fetchStatus(true, true)}
+            onVerifySearch={() => fetchStatus(true, true, false)}
+            onVerifyInference={() => fetchStatus(true, false, true)}
             isRefreshingStatus={isRefreshingStatus}
           />
         )}

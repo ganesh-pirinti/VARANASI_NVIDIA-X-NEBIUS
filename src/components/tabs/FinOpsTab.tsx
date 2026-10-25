@@ -48,6 +48,9 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
   loadedFixture,
 }) => {
   const [includeInferenceTokens, setIncludeInferenceTokens] = useState(true);
+  const [enableEmpiricalTelemetry, setEnableEmpiricalTelemetry] = useState(false);
+  const [benchmarkDurationMinutes, setBenchmarkDurationMinutes] = useState(60);
+  const [telemetryProfiler, setTelemetryProfiler] = useState("nvidia-smi dmon / PyTorch DCGM");
 
   const baselineCatalogGpu = VERIFIED_GPU_CATALOG.find((g) => g.id === baselineGpu.gpuId);
   const proposedCatalogGpu = VERIFIED_GPU_CATALOG.find((g) => g.id === proposedGpu.gpuId);
@@ -149,6 +152,71 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
             <span>nebius.com/prices</span>
             <ExternalLink className="h-3 w-3" />
           </a>
+        </div>
+
+        {/* Empirical Runtime Telemetry Toggle & Controls */}
+        <div className="rounded-[8px] border border-border-standard bg-white p-3.5 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="empirical-telemetry-toggle"
+                checked={enableEmpiricalTelemetry}
+                onChange={(e) => {
+                  setEnableEmpiricalTelemetry(e.target.checked);
+                  if (e.target.checked) {
+                    const hours = Number((benchmarkDurationMinutes / 60).toFixed(2));
+                    setBaselineGpu((prev) => ({ ...prev, billedHours: hours }));
+                    setProposedGpu((prev) => ({ ...prev, billedHours: hours }));
+                  }
+                }}
+                className="h-4 w-4 rounded border-border-standard text-nvidia-green focus:ring-nvidia-green cursor-pointer"
+              />
+              <label htmlFor="empirical-telemetry-toggle" className="text-[13px] font-semibold text-text-primary cursor-pointer select-none">
+                Empirical Runtime Telemetry Available (Hardware Benchmark Profile)
+              </label>
+            </div>
+            <span
+              className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-[4px] border ${
+                enableEmpiricalTelemetry
+                  ? "bg-nvidia-surface text-nvidia-dark border-nvidia-green/40"
+                  : "bg-surface-secondary text-text-muted border-border-subtle"
+              }`}
+            >
+              {enableEmpiricalTelemetry ? "MEASURED TELEMETRY" : "THEORETICAL ESTIMATE"}
+            </span>
+          </div>
+
+          {enableEmpiricalTelemetry && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-subtle text-[12px] animate-fade-in">
+              <div>
+                <label className="block text-text-secondary mb-1 font-semibold">Measured Benchmark Duration (Minutes)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={benchmarkDurationMinutes}
+                  onChange={(e) => {
+                    const mins = Math.max(1, parseInt(e.target.value, 10) || 1);
+                    setBenchmarkDurationMinutes(mins);
+                    const hours = Number((mins / 60).toFixed(2));
+                    setBaselineGpu((prev) => ({ ...prev, billedHours: hours }));
+                    setProposedGpu((prev) => ({ ...prev, billedHours: hours }));
+                  }}
+                  className="w-full h-8 rounded-[6px] border border-border-standard bg-white px-2.5 text-[13px] text-text-primary focus:border-nvidia-green focus:ring-1 focus:ring-nvidia-green focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-text-secondary mb-1 font-semibold">Hardware Telemetry Source</label>
+                <input
+                  type="text"
+                  value={telemetryProfiler}
+                  onChange={(e) => setTelemetryProfiler(e.target.value)}
+                  className="w-full h-8 rounded-[6px] border border-border-standard bg-white px-2.5 text-[13px] text-text-primary focus:border-nvidia-green focus:ring-1 focus:ring-nvidia-green focus:outline-none"
+                  placeholder="e.g. nvidia-smi dmon, PyTorch Profiler, DCGM"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

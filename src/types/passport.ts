@@ -22,6 +22,7 @@ export interface DiagnosticInvestigation {
 export interface RunCostPassport {
   id: string;
   schemaVersion: "1.0.0";
+  integrityHash?: string;
   title: string;
   createdAt: string;
   targetEnvironment: {

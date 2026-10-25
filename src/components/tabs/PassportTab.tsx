@@ -134,6 +134,15 @@ export const PassportTab: React.FC<PassportTabProps> = ({
               <span>Timestamp: {passport.createdAt}</span>
               <span>•</span>
               <span>Target: <strong className="text-text-primary">{passport.targetEnvironment.targetGpu}</strong></span>
+              {passport.integrityHash && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5 text-nvidia-dark font-mono bg-nvidia-surface px-2 py-0.5 rounded border border-nvidia-green/40" title={`Full SHA-256: ${passport.integrityHash}`}>
+                    <ShieldCheck className="h-3.5 w-3.5 text-nvidia-green" />
+                    <span>SHA-256: <code>{passport.integrityHash.slice(0, 16)}...</code></span>
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

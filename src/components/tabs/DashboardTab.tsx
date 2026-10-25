@@ -301,7 +301,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                     ? "bg-[#FEF3C7] text-status-warning border border-status-warning/30 animate-pulse"
                     : systemStatus?.nebiusStatus === "CONFIGURED"
                     ? "bg-surface-secondary text-text-secondary border border-border-standard"
-                    : systemStatus?.nebiusStatus === "RATE_LIMITED" || systemStatus?.nebiusStatus === "DEGRADED"
+                    : systemStatus?.nebiusStatus === "STALE" || systemStatus?.nebiusStatus === "RATE_LIMITED" || systemStatus?.nebiusStatus === "DEGRADED"
                     ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
                     : systemStatus?.nebiusStatus === "FAILED"
                     ? "bg-[#FEE2E2] text-status-error border border-status-error/30"
@@ -310,8 +310,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               >
                 {!systemStatus || systemStatus.nebiusStatus === "CHECKING"
                   ? "CHECKING..."
-                  : systemStatus.nebiusStatus === "CONNECTED" && systemStatus.nebiusIsStale
-                  ? "CONNECTED (STALE)"
+                  : systemStatus.nebiusStatus === "CONNECTED"
+                  ? "CONNECTED"
+                  : systemStatus.nebiusStatus === "STALE"
+                  ? "STALE (CACHED)"
                   : systemStatus.nebiusStatus === "RATE_LIMITED"
                   ? "RATE LIMITED"
                   : systemStatus.nebiusStatus}
@@ -336,14 +338,12 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               <span
                 className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] transition-all duration-200 ${
                   systemStatus?.tavilyStatus === "CONNECTED"
-                    ? systemStatus.tavilyIsStale
-                      ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
-                      : "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
+                    ? "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
                     : systemStatus?.tavilyStatus === "CHECKING" || !systemStatus
                     ? "bg-[#FEF3C7] text-status-warning border border-status-warning/30 animate-pulse"
                     : systemStatus?.tavilyStatus === "CONFIGURED"
                     ? "bg-surface-secondary text-text-secondary border border-border-standard"
-                    : systemStatus?.tavilyStatus === "RATE_LIMITED" || systemStatus?.tavilyStatus === "DEGRADED"
+                    : systemStatus?.tavilyStatus === "STALE" || systemStatus?.tavilyStatus === "RATE_LIMITED" || systemStatus?.tavilyStatus === "DEGRADED"
                     ? "bg-[#FEF3C7] text-text-primary border border-status-warning/40"
                     : systemStatus?.tavilyStatus === "FAILED"
                     ? "bg-[#FEE2E2] text-status-error border border-status-error/30"
@@ -352,8 +352,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               >
                 {!systemStatus || systemStatus.tavilyStatus === "CHECKING"
                   ? "CHECKING..."
-                  : systemStatus.tavilyStatus === "CONNECTED" && systemStatus.tavilyIsStale
-                  ? "CONNECTED (STALE)"
+                  : systemStatus.tavilyStatus === "CONNECTED"
+                  ? "CONNECTED"
+                  : systemStatus.tavilyStatus === "STALE"
+                  ? "STALE (CACHED)"
                   : systemStatus.tavilyStatus === "RATE_LIMITED"
                   ? "RATE LIMITED"
                   : systemStatus.tavilyStatus}

@@ -126,4 +126,6 @@ export interface ProposedPatch {
   createdAt: string;
   approvedAt?: string;
   verifiedAt?: string;
+  isRemediated?: boolean;
+  reverificationNotes?: string;
 }

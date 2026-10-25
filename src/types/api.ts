@@ -5,6 +5,7 @@ export type IntegrationState =
   | "CONFIGURED"
   | "CHECKING"
   | "CONNECTED"
+  | "STALE"
   | "RATE_LIMITED"
   | "DEGRADED"
   | "FAILED"
@@ -53,6 +54,8 @@ export interface SystemStatusResponse {
   nebiusBaseUrl: string;
   nebiusModel: string;
   nebiusModelAvailable: boolean;
+  nebiusInferenceAvailable?: boolean;
+  nebiusInferenceTested?: boolean;
   nebiusError?: string;
   nebiusStatusCode?: number;
   nebiusIsStale?: boolean;
