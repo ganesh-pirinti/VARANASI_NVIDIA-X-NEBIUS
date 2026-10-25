@@ -16,6 +16,7 @@ import {
   FinOpsComparisonResult
 } from "@/types/finops";
 import { VERIFIED_GPU_CATALOG } from "@/lib/constants";
+import { DemoFixture } from "@/lib/fixtures/demo-workloads";
 
 interface FinOpsTabProps {
   baselineGpu: GpuWorkloadInput;
@@ -29,6 +30,7 @@ interface FinOpsTabProps {
   comparisonResult: FinOpsComparisonResult | null;
   onCalculate: () => Promise<void>;
   isLoading: boolean;
+  loadedFixture?: DemoFixture | null;
 }
 
 export const FinOpsTab: React.FC<FinOpsTabProps> = ({
@@ -43,6 +45,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
   comparisonResult,
   onCalculate,
   isLoading,
+  loadedFixture,
 }) => {
   const [includeInferenceTokens, setIncludeInferenceTokens] = useState(true);
 
@@ -82,6 +85,21 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Simulation Banner if loaded from fixture */}
+      {loadedFixture && (
+        <div className="rounded-xl border border-status-warning/40 bg-status-warning/10 p-3 sm:p-4 text-xs text-text-secondary flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-status-warning shrink-0" />
+            <span>
+              FinOps Scenario Configured via Simulated Fixture: <strong className="text-text-primary font-mono">{loadedFixture.name}</strong>.
+            </span>
+          </div>
+          <span className="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-status-warning/20 text-status-warning border border-status-warning/30 shrink-0">
+            Simulated Rates
+          </span>
+        </div>
+      )}
+
       {/* FinOps Header */}
       <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-5 shadow-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
@@ -602,6 +620,19 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
         </div>
       </div>
 
+      {/* Empty State when no calculation has been run */}
+      {!comparisonResult && (
+        <div className="rounded-2xl border border-border-standard bg-surface-card p-10 text-center space-y-3 shadow-card">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm">
+            <DollarSign className="h-6 w-6" />
+          </div>
+          <h3 className="text-base font-bold text-text-primary">No Comparison Calculated Yet</h3>
+          <p className="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
+            Adjust your baseline and proposed candidate parameters above and click <strong>Calculate Cost Comparison</strong>, or load a demonstration fixture from the top navigation bar.
+          </p>
+        </div>
+      )}
+
       {/* Comparison Calculation Results */}
       {comparisonResult && (
         <div className="space-y-6">
@@ -611,7 +642,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
               <div>
                 <div className="flex items-center gap-2.5">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary">
-                    Calculated Margin Delta &amp; Compute Spend
+                    Projected Margin Delta &amp; Compute Spend
                   </h3>
                   {/* Strict Verification Badge */}
                   {comparisonResult.isSavingsVerified ? (
@@ -626,14 +657,16 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-text-muted mt-1">
-                  Formula: &Delta;C = Baseline Spend &minus; Alternative Spend
+                <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                  Formula: &Delta;C = Baseline Spend &minus; Alternative Spend | Projected savings assume equivalent completion runtime. Not realized savings.
                 </p>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <div className="text-[10px] uppercase font-mono text-text-muted">Calculated Difference</div>
+                  <div className="text-[10px] uppercase font-mono text-text-muted">
+                    {comparisonResult.deltaCostUsd >= 0 ? "Projected Cost Reduction" : "Projected Cost Increase"}
+                  </div>
                   <div
                     className={`text-2xl font-black font-mono ${
                       comparisonResult.deltaCostUsd >= 0 ? "text-nvidia-green" : "text-status-error"
@@ -650,8 +683,8 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   }`}
                 >
                   {comparisonResult.percentageDifference >= 0
-                    ? `-${comparisonResult.percentageDifference.toFixed(1)}% Spend`
-                    : `+${Math.abs(comparisonResult.percentageDifference).toFixed(1)}% Spend`}
+                    ? `-${comparisonResult.percentageDifference.toFixed(1)}% Spend Reduction`
+                    : `+${Math.abs(comparisonResult.percentageDifference).toFixed(1)}% Spend Increase`}
                 </div>
               </div>
             </div>

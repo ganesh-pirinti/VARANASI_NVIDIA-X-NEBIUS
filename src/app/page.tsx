@@ -41,6 +41,7 @@ export default function Home() {
   const [preflightReport, setPreflightReport] = useState<PreflightReport | null>(null);
   const [diagnoseResult, setDiagnoseResult] = useState<DiagnoseResponse | null>(null);
   const [proposedPatch, setProposedPatch] = useState<ProposedPatch | null>(null);
+  const [loadedFixture, setLoadedFixture] = useState<DemoFixture | null>(null);
 
   // FinOps Inputs
   const [baselineGpu, setBaselineGpu] = useState<GpuWorkloadInput>({
@@ -53,11 +54,11 @@ export default function Home() {
   });
 
   const [baselineModel, setBaselineModel] = useState<ModelInferenceInput>({
-    modelName: "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+    modelName: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
     inputTokensMillion: 25.0,
     outputTokensMillion: 12.5,
-    inputTokenRatePerMillionUsd: 0.35,
-    outputTokenRatePerMillionUsd: 0.90,
+    inputTokenRatePerMillionUsd: 0.20,
+    outputTokenRatePerMillionUsd: 0.50,
   });
 
   const [proposedGpu, setProposedGpu] = useState<GpuWorkloadInput>({
@@ -70,11 +71,11 @@ export default function Home() {
   });
 
   const [proposedModel, setProposedModel] = useState<ModelInferenceInput>({
-    modelName: "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+    modelName: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
     inputTokensMillion: 25.0,
     outputTokensMillion: 12.5,
-    inputTokenRatePerMillionUsd: 0.35,
-    outputTokenRatePerMillionUsd: 0.90,
+    inputTokenRatePerMillionUsd: 0.20,
+    outputTokenRatePerMillionUsd: 0.50,
   });
 
   const [comparisonResult, setComparisonResult] = useState<FinOpsComparisonResult | null>(null);
@@ -91,28 +92,32 @@ export default function Home() {
   useEffect(() => {
     fetch("/api/status")
       .then((res) => res.json())
-      .then((data) => setSystemStatus(data))
+      .then((data: SystemStatusResponse) => {
+        setSystemStatus(data);
+        if (data.nebiusModel) {
+          setBaselineModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+          setProposedModel((prev) => ({ ...prev, modelName: data.nebiusModel }));
+        }
+      })
       .catch(() => {
         // Fallback default
         setSystemStatus({
           nebiusConfigured: false,
+          nebiusStatus: "UNKNOWN",
           nebiusBaseUrl: "https://api.tokenfactory.nebius.com/v1",
-          nebiusModel: "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
+          nebiusModel: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+          nebiusModelAvailable: false,
           tavilyConfigured: false,
+          tavilyStatus: "UNKNOWN",
           appVersion: "1.0.0",
           environment: "production",
         });
       });
-
-    // Auto-calculate initial FinOps baseline vs proposed
-    const baseRes = calculateFinOpsCost(baselineGpu, baselineModel);
-    const propRes = calculateFinOpsCost(proposedGpu, proposedModel);
-    const comp = compareFinOpsConfigurations(baseRes, propRes);
-    setComparisonResult(comp);
   }, []);
 
   // Handle demo fixture selection
   const handleSelectFixture = (fixture: DemoFixture) => {
+    setLoadedFixture(fixture);
     setInputs({
       projectName: fixture.inputs.projectName,
       targetGpu: fixture.inputs.targetGpu,
@@ -401,6 +406,7 @@ export default function Home() {
         setActiveTab={setActiveTab}
         systemStatus={systemStatus}
         onSelectFixture={handleSelectFixture}
+        loadedFixture={loadedFixture}
       />
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -413,6 +419,7 @@ export default function Home() {
             systemStatus={systemStatus}
             setActiveTab={setActiveTab}
             onSelectFixture={handleSelectFixture}
+            loadedFixture={loadedFixture}
           />
         )}
 
@@ -424,6 +431,7 @@ export default function Home() {
             onRunPreflight={handleRunPreflight}
             isLoading={isLoadingPreflight}
             setActiveTab={setActiveTab}
+            loadedFixture={loadedFixture}
           />
         )}
 
@@ -461,6 +469,7 @@ export default function Home() {
             comparisonResult={comparisonResult}
             onCalculate={handleCalculateFinops}
             isLoading={isLoadingFinops}
+            loadedFixture={loadedFixture}
           />
         )}
 

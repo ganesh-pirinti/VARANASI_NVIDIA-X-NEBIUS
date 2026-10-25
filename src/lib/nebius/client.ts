@@ -28,7 +28,7 @@ export interface NebiusDiagnosticResult {
 }
 
 const DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1";
-const DEFAULT_MODEL = "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF";
+const DEFAULT_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
 
 /**
  * Executes a diagnostic reasoning request to an eligible NVIDIA open-source model

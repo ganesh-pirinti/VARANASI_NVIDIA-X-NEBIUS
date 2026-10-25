@@ -3,7 +3,7 @@ import { GpuSpec } from "@/types/finops";
 /**
  * Audited Hardware Specifications and Official Pricing Catalog
  * Audited directly against official Nebius AI Cloud pricing: https://nebius.com/prices
- * Verification timestamp: 2026-02-20
+ * Verification timestamp: 2026-10-25
  */
 export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
   {
@@ -21,7 +21,7 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "VERIFIED",
     provider: "Nebius",
     priceSourceUrl: "https://nebius.com/prices",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "Verified on-demand ($4.50/GPU-hr) and dynamic preemptible spot (starts from $0.79/GPU-hr) from https://nebius.com/prices. Billed per second with 1-hr unit.",
   },
   {
@@ -39,7 +39,7 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "VERIFIED",
     provider: "Nebius",
     priceSourceUrl: "https://nebius.com/prices",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "Verified on-demand ($5.40/GPU-hr) and dynamic preemptible spot (starts from $0.79/GPU-hr) from https://nebius.com/prices.",
   },
   {
@@ -57,7 +57,7 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "VERIFIED",
     provider: "Nebius",
     priceSourceUrl: "https://nebius.com/prices",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "Verified Intel CPU configuration: $1.55 on-demand / $0.74 preemptible flat rate from https://nebius.com/prices.",
   },
   {
@@ -75,7 +75,7 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "VERIFIED",
     provider: "Nebius",
     priceSourceUrl: "https://nebius.com/prices",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "Verified AMD CPU configuration: $1.82 on-demand / $0.90 preemptible flat rate from https://nebius.com/prices.",
   },
   {
@@ -92,7 +92,7 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "UNKNOWN",
     provider: "Nebius",
     priceSourceUrl: "https://nebius.com/prices (Unlisted SKU / Requires Quote)",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "A100 is not listed on active self-serve public pricing on nebius.com/prices. Requires user-supplied quote.",
   },
   {
@@ -110,7 +110,7 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "UNKNOWN",
     provider: "Nebius",
     priceSourceUrl: "https://nebius.com/prices (Requires Enterprise Reservation Quote)",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "Blackwell on-demand rate requires dedicated reservation contract. Mark rate as UNKNOWN unless supplied by user.",
   },
   {
@@ -129,12 +129,22 @@ export const VERIFIED_GPU_CATALOG: GpuSpec[] = [
     priceStatus: "VERIFIED",
     provider: "AWS",
     priceSourceUrl: "https://aws.amazon.com/ec2/pricing/on-demand/",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
     pricingNotes: "Official AWS on-demand pricing: $32.96 per instance-hour for 8x H100 ($4.12/GPU-hour equivalent).",
   }
 ];
 
 export const MODEL_TOKEN_RATES = [
+  {
+    modelId: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    name: "NVIDIA Nemotron 3 Nano 30B A3B",
+    inputRatePerMillionUsd: 0.20,
+    outputRatePerMillionUsd: 0.50,
+    isRateVerified: true,
+    provider: "Nebius Token Factory",
+    priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
+    lastVerifiedDate: "2026-10-25",
+  },
   {
     modelId: "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF",
     name: "NVIDIA Llama 3.1 Nemotron 70B Instruct",
@@ -143,7 +153,7 @@ export const MODEL_TOKEN_RATES = [
     isRateVerified: true,
     provider: "Nebius Token Factory",
     priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
   },
   {
     modelId: "nvidia/Nemotron-3_5-Lightning",
@@ -153,7 +163,7 @@ export const MODEL_TOKEN_RATES = [
     isRateVerified: true,
     provider: "Nebius Token Factory",
     priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
   },
   {
     modelId: "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -163,7 +173,7 @@ export const MODEL_TOKEN_RATES = [
     isRateVerified: true,
     provider: "Nebius Token Factory",
     priceSourceUrl: "https://tokenfactory.nebius.com/pricing",
-    lastVerifiedDate: "2026-02-20",
+    lastVerifiedDate: "2026-10-25",
   }
 ];
 

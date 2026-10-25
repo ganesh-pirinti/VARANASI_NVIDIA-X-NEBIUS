@@ -29,7 +29,7 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
   const timestamp = new Date().toISOString();
   const id = `rcp-${Date.now()}`;
 
-  const nebiusModel = options.diagnosticResult?.modelUsed || process.env.NEBIUS_MODEL || "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF";
+  const nebiusModel = options.diagnosticResult?.modelUsed || process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
   const baseUrl = (process.env.NEBIUS_BASE_URL || "https://api.tokenfactory.nebius.com/v1").replace(/\/+$/, "");
 
   // Finops summary mapping

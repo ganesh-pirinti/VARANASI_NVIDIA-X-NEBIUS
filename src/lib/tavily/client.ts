@@ -69,12 +69,15 @@ export async function executeTavilySearch(
 
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
+      const errorMsg = `Tavily API responded with status ${response.status}: ${errText.slice(0, 200)}`;
+      const globalAny = globalThis as unknown as { __tavilyLastVerified?: { success: boolean; error?: string; timestamp: number } };
+      globalAny.__tavilyLastVerified = { success: false, error: errorMsg, timestamp: Date.now() };
       return {
         success: false,
         query: options.query,
         citations: [],
         isFallback: false,
-        error: `Tavily API responded with status ${response.status}: ${errText.slice(0, 200)}`,
+        error: errorMsg,
       };
     }
 
@@ -88,6 +91,9 @@ export async function executeTavilySearch(
       relevanceScore: r.score,
     }));
 
+    const globalAny = globalThis as unknown as { __tavilyLastVerified?: { success: boolean; error?: string; timestamp: number } };
+    globalAny.__tavilyLastVerified = { success: true, timestamp: Date.now() };
+
     return {
       success: true,
       query: options.query,
@@ -96,6 +102,8 @@ export async function executeTavilySearch(
     };
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
+    const globalAny = globalThis as unknown as { __tavilyLastVerified?: { success: boolean; error?: string; timestamp: number } };
+    globalAny.__tavilyLastVerified = { success: false, error: errorMsg, timestamp: Date.now() };
     return {
       success: false,
       query: options.query,

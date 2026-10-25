@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { PreflightInputs, PreflightReport } from "@/types/runguard";
 import { VERIFIED_GPU_CATALOG } from "@/lib/constants";
+import { DemoFixture } from "@/lib/fixtures/demo-workloads";
 import { StatusBadge, SeverityBadge } from "../ui/StatusBadge";
 
 interface RunGuardTabProps {
@@ -24,6 +25,7 @@ interface RunGuardTabProps {
   onRunPreflight: () => Promise<void>;
   isLoading: boolean;
   setActiveTab: (tab: string) => void;
+  loadedFixture?: DemoFixture | null;
 }
 
 export const RunGuardTab: React.FC<RunGuardTabProps> = ({
@@ -33,6 +35,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
   onRunPreflight,
   isLoading,
   setActiveTab,
+  loadedFixture,
 }) => {
   const [activeFileTab, setActiveFileTab] = useState<"docker" | "deps" | "config" | "log">("config");
 
@@ -64,6 +67,21 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Simulation Banner if loaded from fixture */}
+      {loadedFixture && (
+        <div className="rounded-xl border border-status-warning/40 bg-status-warning/10 p-3 sm:p-4 text-xs text-text-secondary flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-status-warning shrink-0" />
+            <span>
+              Inspecting Simulated Fixture: <strong className="text-text-primary font-mono">{loadedFixture.name}</strong>. Modifications to input fields will update inspection dynamically.
+            </span>
+          </div>
+          <span className="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-status-warning/20 text-status-warning border border-status-warning/30 shrink-0">
+            Simulated Inputs
+          </span>
+        </div>
+      )}
+
       {/* Top Configuration Bar */}
       <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-5 shadow-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">

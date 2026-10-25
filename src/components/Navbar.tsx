@@ -4,15 +4,16 @@ import React, { useState } from "react";
 import { 
   ShieldAlert, 
   Cpu, 
-  Search, 
   FileCode, 
   DollarSign, 
   FileText, 
   Sparkles,
   ChevronDown,
-  Layers
+  Layers,
+  FlaskConical,
+  XCircle
 } from "lucide-react";
-import { SystemStatusResponse } from "@/types/api";
+import { SystemStatusResponse, IntegrationState } from "@/types/api";
 import { DEMO_FIXTURES, DemoFixture } from "@/lib/fixtures/demo-workloads";
 
 interface NavbarProps {
@@ -20,6 +21,7 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   systemStatus: SystemStatusResponse | null;
   onSelectFixture: (fixture: DemoFixture) => void;
+  loadedFixture?: DemoFixture | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -27,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   systemStatus,
   onSelectFixture,
+  loadedFixture,
 }) => {
   const [showFixtureMenu, setShowFixtureMenu] = useState(false);
 
@@ -38,6 +41,67 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: "finops", label: "FinOps Engine", icon: DollarSign },
     { id: "passport", label: "Run & Cost Passport", icon: FileText },
   ];
+
+  const renderStatusPill = (label: string, status?: IntegrationState, error?: string, model?: string) => {
+    switch (status) {
+      case "CONNECTED":
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help"
+            title={model ? `${label} Live & Connected. Verified model: ${model}` : `${label} API Live & Connected`}
+          >
+            <span className="h-2 w-2 rounded-full bg-nvidia-green shadow-sm shadow-nvidia-green" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="text-nvidia-green font-semibold">Connected</span>
+          </div>
+        );
+      case "CONFIGURED":
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help"
+            title={error || `${label} API key configured; ready for execution`}
+          >
+            <span className="h-2 w-2 rounded-full bg-nebius-cyan" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="text-nebius-cyan font-semibold">Configured</span>
+          </div>
+        );
+      case "CHECKING":
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono"
+            title={`Checking ${label} connectivity...`}
+          >
+            <span className="h-2 w-2 rounded-full bg-status-warning animate-pulse" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="text-status-warning font-semibold">Checking</span>
+          </div>
+        );
+      case "FAILED":
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help"
+            title={error || `${label} connection or verification failed`}
+          >
+            <span className="h-2 w-2 rounded-full bg-status-error" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="text-status-error font-semibold">Failed</span>
+          </div>
+        );
+      case "NOT_CONFIGURED":
+      default:
+        return (
+          <div
+            className="flex items-center gap-1.5 text-[11px] font-mono cursor-help"
+            title={`${label} API key not configured in .env.local`}
+          >
+            <span className="h-2 w-2 rounded-full bg-status-warning/70" />
+            <span className="text-text-muted">{label}:</span>
+            <span className="text-status-warning font-semibold">No Key</span>
+          </div>
+        );
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-standard bg-app/90 backdrop-blur-md">
@@ -57,6 +121,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="rounded-md bg-surface-elevated px-2 py-0.5 text-[10px] font-bold font-mono tracking-wider text-nebius-cyan border border-nebius-cyan/30">
                 NEBIUS × NVIDIA
               </span>
+              {loadedFixture && (
+                <span className="hidden lg:inline-flex items-center gap-1 rounded-md bg-status-warning/15 px-2 py-0.5 text-[10px] font-bold font-mono text-status-warning border border-status-warning/30">
+                  <FlaskConical className="h-3 w-3" />
+                  DEMO SCENARIO
+                </span>
+              )}
             </div>
             <p className="text-[11px] text-text-muted hidden sm:block">
               Autonomous GPU RunGuard &amp; FinOps Margin Engine
@@ -108,41 +178,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* API Health Pills */}
           <div className="hidden md:flex items-center gap-3 border-l border-border-subtle pl-3">
-            {/* Nebius Status */}
-            <div
-              className="flex items-center gap-1.5 text-[11px] font-mono"
-              title={systemStatus?.nebiusConfigured ? `Nebius Token Factory Active (${systemStatus.nebiusModel})` : "NEBIUS_API_KEY not configured"}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  systemStatus?.nebiusConfigured
-                    ? "bg-nvidia-green shadow-sm shadow-nvidia-green"
-                    : "bg-status-warning"
-                }`}
-              />
-              <span className="text-text-muted">Nebius:</span>
-              <span className={systemStatus?.nebiusConfigured ? "text-text-primary font-semibold" : "text-status-warning"}>
-                {systemStatus?.nebiusConfigured ? "Ready" : "No Key"}
-              </span>
-            </div>
-
-            {/* Tavily Status */}
-            <div
-              className="flex items-center gap-1.5 text-[11px] font-mono"
-              title={systemStatus?.tavilyConfigured ? "Tavily Search Engine Active" : "TAVILY_API_KEY not configured"}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  systemStatus?.tavilyConfigured
-                    ? "bg-nvidia-green shadow-sm shadow-nvidia-green"
-                    : "bg-status-warning"
-                }`}
-              />
-              <span className="text-text-muted">Tavily:</span>
-              <span className={systemStatus?.tavilyConfigured ? "text-text-primary font-semibold" : "text-status-warning"}>
-                {systemStatus?.tavilyConfigured ? "Ready" : "No Key"}
-              </span>
-            </div>
+            {renderStatusPill(
+              "Nebius",
+              systemStatus?.nebiusStatus,
+              systemStatus?.nebiusError,
+              systemStatus?.nebiusModel
+            )}
+            {renderStatusPill(
+              "Tavily",
+              systemStatus?.tavilyStatus,
+              systemStatus?.tavilyError
+            )}
           </div>
         </div>
       </div>

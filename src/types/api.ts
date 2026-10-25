@@ -1,5 +1,13 @@
 import { EvidenceCitation } from "./passport";
 
+export type IntegrationState =
+  | "NOT_CONFIGURED"
+  | "CONFIGURED"
+  | "CHECKING"
+  | "CONNECTED"
+  | "FAILED"
+  | "UNKNOWN";
+
 export interface DiagnoseRequest {
   diagnosticLog: string;
   dockerfileContent?: string;
@@ -39,9 +47,15 @@ export interface TavilySearchResponse {
 
 export interface SystemStatusResponse {
   nebiusConfigured: boolean;
+  nebiusStatus: IntegrationState;
   nebiusBaseUrl: string;
   nebiusModel: string;
+  nebiusModelAvailable: boolean;
+  nebiusError?: string;
   tavilyConfigured: boolean;
+  tavilyStatus: IntegrationState;
+  tavilyError?: string;
   appVersion: string;
   environment: string;
+  checkedAt?: string;
 }

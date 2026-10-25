@@ -27,7 +27,7 @@ describe("Audited FinOps Calculation Engine (https://nebius.com/prices)", () => 
     // Source attribution verification
     expect(result.priceSources.length).toBe(1);
     expect(result.priceSources[0].sourceUrl).toBe("https://nebius.com/prices");
-    expect(result.priceSources[0].lastVerifiedDate).toBe("2026-02-20");
+    expect(result.priceSources[0].lastVerifiedDate).toBe("2026-10-25");
     expect(result.priceSources[0].priceStatus).toBe("VERIFIED");
   });
 
