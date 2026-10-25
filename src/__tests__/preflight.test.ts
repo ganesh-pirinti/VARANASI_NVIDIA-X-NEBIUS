@@ -121,4 +121,87 @@ RuntimeError: DataLoader worker (pid 220) is killed by signal: Bus error.`;
     expect(report.suggestedPatch?.patchedContent).toContain("shm_size: '16gb'");
     expect(report.suggestedPatch?.diff).toContain("+");
   });
+
+  it("evaluates custom deterministic rules and reports FAIL on threshold violation", () => {
+    const report = runPreflightChecks({
+      projectName: "Custom Rule Violation Test",
+      targetGpu: "nebius-h100-sxm",
+      gpuCount: 1,
+      batchSize: 32,
+      customRules: [
+        {
+          id: "rule-max-batch",
+          name: "Max Concurrency Policy",
+          category: "WORKLOAD_RESOURCES",
+          field: "batch_size",
+          operator: ">",
+          threshold: "16",
+          severity: "HIGH",
+          description: "Batch size should not exceed 16 on single GPU",
+          recommendedFix: "Lower batch size to <= 16",
+          isEnabled: true,
+        },
+      ],
+    });
+
+    const customCheck = report.checks.find((c) => c.id === "custom-check-rule-max-batch");
+    expect(customCheck).toBeDefined();
+    expect(customCheck?.status).toBe("FAIL");
+    expect(report.findings.some((f) => f.title.includes("Max Concurrency Policy"))).toBe(true);
+  });
+
+  it("evaluates custom deterministic rules and reports PASS when compliance holds", () => {
+    const report = runPreflightChecks({
+      projectName: "Custom Rule Compliance Test",
+      targetGpu: "nebius-h100-sxm",
+      gpuCount: 1,
+      batchSize: 8,
+      customRules: [
+        {
+          id: "rule-max-batch-ok",
+          name: "Max Concurrency Policy",
+          category: "WORKLOAD_RESOURCES",
+          field: "batch_size",
+          operator: ">",
+          threshold: "16",
+          severity: "HIGH",
+          description: "Batch size should not exceed 16 on single GPU",
+          recommendedFix: "Lower batch size to <= 16",
+          isEnabled: true,
+        },
+      ],
+    });
+
+    const customCheck = report.checks.find((c) => c.id === "custom-check-rule-max-batch-ok");
+    expect(customCheck).toBeDefined();
+    expect(customCheck?.status).toBe("PASS");
+  });
+
+  it("supports independent re-verification when a configuration patch is applied", () => {
+    // 1. Initial bad configuration
+    const initialReport = runPreflightChecks({
+      projectName: "Patch Lifecycle Test",
+      targetGpu: "nebius-h100-sxm",
+      gpuCount: 1,
+      workloadConfigContent: `services:\n  vllm:\n    image: vllm/vllm-openai:latest`,
+    });
+
+    expect(initialReport.overallStatus).toBe("FAIL");
+    expect(initialReport.suggestedPatch).toBeDefined();
+
+    // 2. Simulate applying the patch
+    const patchedConfig = initialReport.suggestedPatch?.patchedContent || "";
+    expect(patchedConfig).toContain("shm_size: '16gb'");
+
+    // 3. Re-verify patched configuration
+    const reverifiedReport = runPreflightChecks({
+      projectName: "Patch Lifecycle Test",
+      targetGpu: "nebius-h100-sxm",
+      gpuCount: 1,
+      workloadConfigContent: patchedConfig,
+    });
+
+    const shmCheck = reverifiedReport.checks.find((c) => c.id === "check-workload-config");
+    expect(shmCheck?.status).toBe("PASS");
+  });
 });

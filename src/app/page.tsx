@@ -296,19 +296,20 @@ export default function Home() {
     });
   };
 
-  const handleApplyPatch = () => {
-    if (!proposedPatch) return;
+  const handleApplyPatch = (patchToApply?: ProposedPatch) => {
+    const p = patchToApply || proposedPatch;
+    if (!p) return;
     // Update target input
-    if (proposedPatch.targetFile.includes("Dockerfile")) {
-      setInputs((prev) => ({ ...prev, dockerfileContent: proposedPatch.patchedContent }));
-    } else if (proposedPatch.targetFile.includes("requirements")) {
-      setInputs((prev) => ({ ...prev, requirementsContent: proposedPatch.patchedContent }));
+    if (p.targetFile.includes("Dockerfile")) {
+      setInputs((prev) => ({ ...prev, dockerfileContent: p.patchedContent }));
+    } else if (p.targetFile.includes("requirements")) {
+      setInputs((prev) => ({ ...prev, requirementsContent: p.patchedContent }));
     } else {
-      setInputs((prev) => ({ ...prev, workloadConfigContent: proposedPatch.patchedContent }));
+      setInputs((prev) => ({ ...prev, workloadConfigContent: p.patchedContent }));
     }
 
     setProposedPatch({
-      ...proposedPatch,
+      ...p,
       status: "APPLIED",
     });
   };
@@ -432,6 +433,9 @@ export default function Home() {
             isLoading={isLoadingPreflight}
             setActiveTab={setActiveTab}
             loadedFixture={loadedFixture}
+            onApplyPatch={handleApplyPatch}
+            onReverifyPatch={handleReverifyPatch}
+            isReverifying={isReverifying}
           />
         )}
 

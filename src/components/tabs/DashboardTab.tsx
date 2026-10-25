@@ -45,10 +45,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   loadedFixture,
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Active Demonstration Banner if a scenario is loaded */}
       {loadedFixture && (
-        <div className="rounded-[12px] border border-status-warning/30 bg-[#FEF3C7] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-card">
+        <div className="rounded-[12px] border border-status-warning/40 bg-[#FEF3C7] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-card animate-fade-in">
           <div className="flex items-start sm:items-center gap-2.5">
             <FlaskConical className="h-5 w-5 text-status-warning shrink-0 mt-0.5 sm:mt-0" />
             <div>
@@ -61,21 +61,25 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-[4px] bg-white text-status-warning border border-status-warning/30 shrink-0 self-end sm:self-auto">
+          <span className="text-[11px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-[4px] bg-white text-status-warning border border-status-warning/30 shrink-0 self-end sm:self-auto shadow-sm">
             Simulated Benchmark
           </span>
         </div>
       )}
 
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-[12px] border border-border-standard bg-white p-6 sm:p-8 shadow-card hover:border-border-hover transition">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Hero Banner with refined warm cream gradient and NVIDIA accent line */}
+      <div className="relative overflow-hidden rounded-[14px] border border-border-standard bg-gradient-to-br from-surface-card via-[#F9F7F1] to-nvidia-surface/30 p-6 sm:p-8 shadow-card hover:shadow-card-hover hover:border-border-hover transition-all duration-300">
+        {/* Subtle decorative circuit pattern / accent bar */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-nvidia-green via-nvidia-muted to-gold"></div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-nvidia-green/30 bg-nvidia-surface px-3 py-1 text-[12px] font-semibold text-nvidia-dark">
-              <span className="h-1.5 w-1.5 rounded-full bg-nvidia-green"></span>
-              Nebius × NVIDIA Global AI Hackathon 2026
+            <div className="inline-flex items-center gap-2 rounded-full border border-nvidia-green/30 bg-nvidia-surface px-3 py-1 text-[12px] font-semibold text-nvidia-dark shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-nvidia-green animate-pulse-gently"></span>
+              <span>Nebius × NVIDIA Global AI Hackathon 2026</span>
+              <span className="text-[10px] text-gold font-bold uppercase tracking-wider ml-1 bg-gold-surface px-1.5 py-0.5 rounded border border-gold/30">Official</span>
             </div>
-            <h1 className="text-[32px] font-bold leading-[1.2] tracking-[-0.8px] text-text-primary">
+            <h1 className="text-[30px] sm:text-[34px] font-bold leading-[1.2] tracking-[-0.8px] text-text-primary">
               VARANASI RunGuard &amp; FinOps Margin Engine
             </h1>
             <p className="text-[14px] font-normal leading-[1.6] text-text-secondary">
@@ -88,7 +92,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               </span>
               <span>•</span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-text-secondary"></span>
+                <span className="h-2 w-2 rounded-full bg-gold"></span>
                 Audited Official Pricing
               </span>
               <span>•</span>
@@ -102,14 +106,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setActiveTab("runguard")}
-              className="flex items-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover transition shadow-sm focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2"
+              className="flex items-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover active:scale-[0.98] transition-all duration-150 shadow-card focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2"
             >
               <ShieldAlert className="h-4 w-4 text-white" />
               <span>Inspect Workload</span>
             </button>
             <button
               onClick={() => setActiveTab("finops")}
-              className="flex items-center gap-2 h-10 px-4 rounded-[6px] bg-white border border-border-standard text-text-primary text-[14px] font-semibold hover:bg-surface-secondary hover:border-border-hover transition shadow-sm"
+              className="flex items-center gap-2 h-10 px-4 rounded-[6px] bg-surface-card border border-border-standard text-text-primary text-[14px] font-semibold hover:bg-surface-secondary hover:border-border-hover active:scale-[0.98] transition-all duration-150 shadow-card"
             >
               <DollarSign className="h-4 w-4 text-nvidia-green" />
               <span>Calculate FinOps</span>
@@ -121,10 +125,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       {/* Metrics & Status Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Module 1: GPU RunGuard Status */}
-        <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-4 shadow-card hover:border-border-hover transition">
+        <div className="enterprise-card space-y-4 animate-fade-in-up stagger-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-[8px] bg-nvidia-surface p-2.5 text-nvidia-dark border border-nvidia-green/30">
+              <div className="rounded-[8px] bg-nvidia-surface p-2.5 text-nvidia-dark border border-nvidia-green/30 shadow-sm">
                 <ShieldAlert className="h-5 w-5 text-nvidia-green" />
               </div>
               <div>
@@ -185,10 +189,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         </div>
 
         {/* Module 2: FinOps Margin Engine */}
-        <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-4 shadow-card hover:border-border-hover transition">
+        <div className="enterprise-card space-y-4 animate-fade-in-up stagger-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-[8px] bg-nvidia-surface p-2.5 text-nvidia-dark border border-nvidia-green/30">
+              <div className="rounded-[8px] bg-nvidia-surface p-2.5 text-nvidia-dark border border-nvidia-green/30 shadow-sm">
                 <DollarSign className="h-5 w-5 text-nvidia-green" />
               </div>
               <div>
@@ -197,7 +201,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               </div>
             </div>
             {finopsComparison ? (
-              <span className={`rounded-[4px] border px-2 py-0.5 text-[12px] font-bold font-mono ${
+              <span className={`rounded-[4px] border px-2 py-0.5 text-[12px] font-bold font-mono transition-all duration-300 ${
                 finopsComparison.isSavingsVerified
                   ? "bg-nvidia-surface border-nvidia-green/40 text-nvidia-dark"
                   : "bg-[#FEF3C7] border-status-warning/30 text-status-warning"
@@ -271,10 +275,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         </div>
 
         {/* Module 3: Active Integrations */}
-        <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-4 shadow-card hover:border-border-hover transition">
+        <div className="enterprise-card space-y-4 animate-fade-in-up stagger-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-[8px] bg-nvidia-surface p-2.5 text-nvidia-dark border border-nvidia-green/30">
+              <div className="rounded-[8px] bg-nvidia-surface p-2.5 text-nvidia-dark border border-nvidia-green/30 shadow-sm">
                 <Cpu className="h-5 w-5 text-nvidia-green" />
               </div>
               <div>
@@ -288,7 +292,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-text-secondary">Nebius Token Factory:</span>
               <span
-                className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] ${
+                className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] transition-all duration-200 ${
                   systemStatus?.nebiusStatus === "CONNECTED"
                     ? "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
                     : systemStatus?.nebiusStatus === "CONFIGURED"
@@ -318,7 +322,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-text-secondary">Tavily Technical Search:</span>
               <span
-                className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] ${
+                className={`font-mono font-semibold px-2 py-0.5 rounded-[4px] text-[11px] transition-all duration-200 ${
                   systemStatus?.tavilyStatus === "CONNECTED"
                     ? "bg-nvidia-surface text-nvidia-dark border border-nvidia-green/30"
                     : systemStatus?.tavilyStatus === "CONFIGURED"
@@ -344,7 +348,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       </div>
 
       {/* Demonstration Fixture Quick Launcher */}
-      <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-4 shadow-card hover:border-border-hover transition">
+      <div className="enterprise-card space-y-4 animate-fade-in-up stagger-4">
         <div>
           <h3 className="text-[17px] font-semibold leading-[1.4] text-text-primary flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-nvidia-green" />
@@ -360,10 +364,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <button
               key={fixture.id}
               onClick={() => onSelectFixture(fixture)}
-              className={`flex flex-col text-left rounded-[8px] border p-4 transition group shadow-sm ${
+              className={`flex flex-col text-left rounded-[8px] border p-4 transition-all duration-200 group shadow-sm active:scale-[0.98] ${
                 loadedFixture?.id === fixture.id
                   ? "border-nvidia-green bg-nvidia-surface/40 ring-1 ring-nvidia-green"
-                  : "border-border-standard bg-white hover:border-border-hover hover:bg-surface-secondary"
+                  : "border-border-standard bg-surface-card hover:border-border-hover hover:bg-surface-secondary"
               }`}
             >
               <div className="flex items-center justify-between gap-1">
@@ -371,7 +375,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                   {fixture.name}
                 </span>
                 {loadedFixture?.id === fixture.id && (
-                  <span className="h-2 w-2 rounded-full bg-nvidia-green shrink-0" />
+                  <span className="h-2 w-2 rounded-full bg-nvidia-green shrink-0 shadow-sm" />
                 )}
               </div>
               <div className="text-[12px] text-text-secondary mt-1.5 line-clamp-2 leading-[1.5]">
@@ -388,7 +392,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
       {/* Latest Run & Cost Passport Preview */}
       {latestPassport && (
-        <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-3 shadow-card hover:border-border-hover transition">
+        <div className="enterprise-card space-y-3 animate-fade-in-up">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <FileText className="h-5 w-5 text-nvidia-green" />

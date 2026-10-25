@@ -98,7 +98,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
 
   if (!passport) {
     return (
-      <div className="rounded-[12px] border border-border-standard bg-white p-12 text-center space-y-4 shadow-card hover:border-border-hover transition">
+      <div className="enterprise-card p-12 text-center space-y-4 animate-fade-in">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[8px] bg-nvidia-surface text-nvidia-green border border-nvidia-green/30 shadow-sm">
           <FileText className="h-7 w-7 text-nvidia-green" />
         </div>
@@ -109,7 +109,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
         <button
           onClick={onGeneratePassport}
           disabled={isGenerating}
-          className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover disabled:opacity-50 transition shadow-sm"
+          className="mt-2 inline-flex items-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover active:scale-[0.98] disabled:opacity-50 transition-all shadow-card"
         >
           <FileText className="h-4 w-4 text-white" />
           <span>{isGenerating ? "Compiling Passport..." : "Assemble Run & Cost Passport"}</span>
@@ -119,9 +119,9 @@ export const PassportTab: React.FC<PassportTabProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Passport Header & Export Action Bar */}
-      <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-5 shadow-card hover:border-border-hover transition">
+      <div className="enterprise-card space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
           <div>
             <div className="flex items-center gap-3">

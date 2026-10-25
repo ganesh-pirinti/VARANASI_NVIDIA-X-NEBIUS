@@ -145,7 +145,7 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
  */
 export function renderPassportHtml(passport: RunCostPassport): string {
   const statusColor = passport.overallRunGuardStatus === "PASS" ? "#2E7D32" : passport.overallRunGuardStatus === "FAIL" ? "#C62828" : "#B45309";
-  const statusBg = passport.overallRunGuardStatus === "PASS" ? "#F2F8E8" : passport.overallRunGuardStatus === "FAIL" ? "#FEE2E2" : "#FEF3C7";
+  const statusBg = passport.overallRunGuardStatus === "PASS" ? "#EFF6E4" : passport.overallRunGuardStatus === "FAIL" ? "#FEE2E2" : "#FEF3C7";
   const statusBorder = passport.overallRunGuardStatus === "PASS" ? "#76B900" : passport.overallRunGuardStatus === "FAIL" ? "#C62828" : "#B45309";
 
   return `<!DOCTYPE html>
@@ -156,8 +156,8 @@ export function renderPassportHtml(passport: RunCostPassport): string {
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #F5F6F7;
-      color: #1F1F1F;
+      background-color: #F7F5EF;
+      color: #242820;
       margin: 0;
       padding: 32px;
       line-height: 1.5;
@@ -165,27 +165,27 @@ export function renderPassportHtml(passport: RunCostPassport): string {
     .container {
       max-width: 900px;
       margin: 0 auto;
-      background-color: #FFFFFF;
-      border: 1px solid #DADDE1;
+      background-color: #FFFDF8;
+      border: 1px solid #E4E1D7;
       border-radius: 12px;
       padding: 32px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 4px 16px rgba(36, 40, 32, 0.05);
     }
     .header {
-      border-bottom: 1px solid #DADDE1;
+      border-bottom: 1px solid #E4E1D7;
       padding-bottom: 24px;
       margin-bottom: 24px;
     }
     .title {
       font-size: 24px;
       font-weight: 700;
-      color: #1F1F1F;
+      color: #242820;
       margin: 0 0 8px 0;
       letter-spacing: -0.02em;
     }
     .subtitle {
       font-size: 13px;
-      color: #555A60;
+      color: #64685F;
     }
     .badge {
       display: inline-block;
@@ -204,7 +204,7 @@ export function renderPassportHtml(passport: RunCostPassport): string {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #355900;
+      color: #294500;
       margin-bottom: 12px;
       border-left: 3px solid #76B900;
       padding-left: 8px;
@@ -215,22 +215,22 @@ export function renderPassportHtml(passport: RunCostPassport): string {
       margin-top: 12px;
     }
     th, td {
-      border: 1px solid #E8EAED;
+      border: 1px solid #ECE9E0;
       padding: 10px 14px;
       text-align: left;
       font-size: 13px;
     }
     th {
-      background-color: #F5F6F7;
-      color: #555A60;
+      background-color: #F0EEE6;
+      color: #64685F;
       text-transform: uppercase;
       font-size: 11px;
       letter-spacing: 0.05em;
       font-weight: 600;
     }
     .code-block {
-      background-color: #F5F6F7;
-      border: 1px solid #DADDE1;
+      background-color: #F0EEE6;
+      border: 1px solid #E4E1D7;
       padding: 14px;
       border-radius: 8px;
       font-family: monospace;

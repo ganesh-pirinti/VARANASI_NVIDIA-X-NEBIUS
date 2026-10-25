@@ -84,24 +84,24 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
   const proposedRateInfo = getActiveRateDisplay(proposedGpu, proposedCatalogGpu);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Simulation Banner if loaded from fixture */}
       {loadedFixture && (
-        <div className="rounded-[12px] border border-status-warning/30 bg-[#FEF3C7] p-4 text-[13px] text-text-primary flex items-center justify-between gap-3 shadow-card">
+        <div className="rounded-[12px] border border-status-warning/40 bg-[#FEF3C7] p-4 text-[13px] text-text-primary flex items-center justify-between gap-3 shadow-card animate-fade-in">
           <div className="flex items-center gap-2">
             <Info className="h-4 w-4 text-status-warning shrink-0" />
             <span>
               FinOps Scenario Configured via Simulated Fixture: <strong className="text-text-primary font-mono">{loadedFixture.name}</strong>.
             </span>
           </div>
-          <span className="text-[11px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-[4px] bg-white text-status-warning border border-status-warning/30 shrink-0">
+          <span className="text-[11px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-[4px] bg-white text-status-warning border border-status-warning/30 shrink-0 shadow-sm">
             Simulated Rates
           </span>
         </div>
       )}
 
       {/* FinOps Header */}
-      <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-5 shadow-card hover:border-border-hover transition">
+      <div className="enterprise-card space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
           <div>
             <h2 className="text-[24px] font-[650] leading-[1.3] text-text-primary flex items-center gap-2.5">
@@ -125,7 +125,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
           <button
             onClick={onCalculate}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover disabled:opacity-50 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2 shrink-0"
+            className="flex items-center justify-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover active:scale-[0.98] disabled:opacity-50 transition-all duration-150 shadow-card focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2 shrink-0"
           >
             {isLoading ? <RefreshCw className="h-4 w-4 animate-spin text-white" /> : <DollarSign className="h-4 w-4 text-white" />}
             <span>{isLoading ? "Calculating..." : "Calculate Cost Comparison"}</span>

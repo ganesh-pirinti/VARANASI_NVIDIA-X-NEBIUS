@@ -31,9 +31,9 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
   setActiveTab,
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Top Banner */}
-      <div className="rounded-[12px] border border-border-standard bg-white p-5 space-y-5 shadow-card hover:border-border-hover transition">
+      <div className="enterprise-card space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
           <div>
             <h2 className="text-[24px] font-[650] leading-[1.3] text-text-primary flex items-center gap-2.5">
@@ -48,7 +48,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           <button
             onClick={onRunDiagnosis}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover disabled:opacity-50 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2 shrink-0"
+            className="flex items-center justify-center gap-2 h-10 px-4 rounded-[6px] bg-nvidia-green text-white text-[14px] font-semibold hover:bg-nvidia-hover active:scale-[0.98] disabled:opacity-50 transition-all duration-150 shadow-card focus:outline-none focus:ring-2 focus:ring-nvidia-green focus:ring-offset-2 shrink-0"
           >
             {isLoading ? <RefreshCw className="h-4 w-4 animate-spin text-white" /> : <Sparkles className="h-4 w-4 text-white" />}
             <span>{isLoading ? "Investigating..." : "Launch Real-Time Investigation"}</span>

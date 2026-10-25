@@ -1,4 +1,4 @@
-export type CheckStatus = "PASS" | "FAIL" | "UNKNOWN";
+export type CheckStatus = "PASS" | "FAIL" | "UNKNOWN" | "RUNNING" | "NOT_TESTED";
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
 export type CheckCategory = 
   | "DOCKER_CONTAINER"
@@ -7,7 +7,8 @@ export type CheckCategory =
   | "SHARED_MEMORY"
   | "DISTRIBUTED_COMMUNICATION"
   | "VRAM_CAPACITY"
-  | "STATIC_SYNTAX";
+  | "STATIC_SYNTAX"
+  | "CUSTOM_RULE";
 
 export interface Finding {
   id: string;
@@ -19,6 +20,7 @@ export interface Finding {
   fileContext?: string;
   recommendedFix: string;
   ruleReference?: string;
+  isActionable?: boolean;
 }
 
 export interface CheckResult {
@@ -30,6 +32,7 @@ export interface CheckResult {
   summary: string;
   findings: Finding[];
   checkedAt: string;
+  ruleDetails?: string;
 }
 
 export interface VramEstimate {
@@ -50,6 +53,40 @@ export interface VramEstimate {
   notes: string[];
 }
 
+export interface CustomValidationRule {
+  id: string;
+  name: string;
+  category: CheckCategory;
+  field: "vram_allocated_gib" | "batch_size" | "context_length" | "gpu_count" | "shm_size_gib" | "dockerfile_content" | "requirements_content" | "log_content";
+  operator: ">" | "<" | ">=" | "<=" | "==" | "!=" | "contains" | "missing";
+  threshold: string;
+  severity: Severity;
+  description: string;
+  recommendedFix: string;
+  isEnabled: boolean;
+}
+
+export interface CustomWorkloadConfig {
+  id: string;
+  name: string;
+  description?: string;
+  targetGpu: string;
+  gpuCount: number;
+  modelName?: string;
+  estimatedModelParamsBillion?: number;
+  precision?: "FP32" | "FP16" | "BF16" | "FP8" | "INT4";
+  contextLengthTokens?: number;
+  batchSize?: number;
+  pythonVersion?: string;
+  dockerfileContent?: string;
+  requirementsContent?: string;
+  workloadConfigContent?: string;
+  diagnosticLogContent?: string;
+  slaConstraintHours?: number;
+  budgetConstraintUsd?: number;
+  createdAt: string;
+}
+
 export interface PreflightInputs {
   projectName: string;
   targetGpu: string;
@@ -62,6 +99,7 @@ export interface PreflightInputs {
   precision?: "FP32" | "FP16" | "BF16" | "FP8" | "INT4";
   contextLengthTokens?: number;
   batchSize?: number;
+  customRules?: CustomValidationRule[];
 }
 
 export interface PreflightReport {

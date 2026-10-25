@@ -16,7 +16,7 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
   }
 
   return (
-    <div className="rounded-[12px] border border-border-standard bg-white p-5 hover:border-border-hover transition shadow-card">
+    <div className="enterprise-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <BookOpen className="h-4 w-4 text-nvidia-green shrink-0" />
