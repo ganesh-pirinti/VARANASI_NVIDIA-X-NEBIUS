@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runPreflightChecks } from "@/lib/preflight/engine";
-import { PreflightInputs } from "@/types/runguard";
+import { PreflightRequestSchema, formatZodError } from "@/lib/security/validators";
 
 export async function POST(req: NextRequest) {
   try {
-    const body: PreflightInputs = await req.json();
+    let rawBody;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Malformed JSON request body." },
+        { status: 400 }
+      );
+    }
 
     // Guard against oversized payload (limit to 5MB)
     const contentPayloadSize = 
-      (body.dockerfileContent?.length || 0) +
-      (body.requirementsContent?.length || 0) +
-      (body.workloadConfigContent?.length || 0) +
-      (body.diagnosticLogContent?.length || 0);
+      (typeof rawBody?.dockerfileContent === "string" ? rawBody.dockerfileContent.length : 0) +
+      (typeof rawBody?.requirementsContent === "string" ? rawBody.requirementsContent.length : 0) +
+      (typeof rawBody?.workloadConfigContent === "string" ? rawBody.workloadConfigContent.length : 0) +
+      (typeof rawBody?.diagnosticLogContent === "string" ? rawBody.diagnosticLogContent.length : 0);
 
     if (contentPayloadSize > 5 * 1024 * 1024) {
       return NextResponse.json(
@@ -20,7 +28,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const report = runPreflightChecks(body);
+    const validation = PreflightRequestSchema.safeParse(rawBody);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: formatZodError(validation.error) },
+        { status: 400 }
+      );
+    }
+
+    const report = runPreflightChecks(validation.data as any);
     return NextResponse.json(report);
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Internal Server Error";

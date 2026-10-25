@@ -1,26 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateFinOpsCost, compareFinOpsConfigurations } from "@/lib/finops/calculator";
-import { GpuWorkloadInput, ModelInferenceInput } from "@/types/finops";
-
-export interface FinOpsCalculatePayload {
-  baselineGpu?: GpuWorkloadInput;
-  baselineModel?: ModelInferenceInput;
-  proposedGpu?: GpuWorkloadInput;
-  proposedModel?: ModelInferenceInput;
-  context?: {
-    baselineGpuId?: string;
-    proposedGpuId?: string;
-    baselinePrecision?: string;
-    proposedPrecision?: string;
-    modelParamBillion?: number;
-    isEmpiricallyBenchmarked?: boolean;
-  };
-}
+import { FinOpsCalculateRequestSchema, formatZodError } from "@/lib/security/validators";
 
 export async function POST(req: NextRequest) {
   try {
-    const body: FinOpsCalculatePayload = await req.json();
+    let rawBody;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Malformed JSON request body." },
+        { status: 400 }
+      );
+    }
 
+    const validation = FinOpsCalculateRequestSchema.safeParse(rawBody);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: formatZodError(validation.error) },
+        { status: 400 }
+      );
+    }
+
+    const body = validation.data;
     const baselineResult = calculateFinOpsCost(body.baselineGpu, body.baselineModel);
 
     // If proposed configuration is provided, compare baseline vs proposed

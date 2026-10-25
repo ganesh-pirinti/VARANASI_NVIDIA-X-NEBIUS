@@ -68,6 +68,75 @@ export const TavilySearchRequestSchema = z.object({
 export type ValidatedDiagnoseRequest = z.infer<typeof DiagnoseRequestSchema>;
 export type ValidatedTavilySearchRequest = z.infer<typeof TavilySearchRequestSchema>;
 
+const GpuWorkloadInputSchema = z.object({
+  gpuId: z.string().max(100),
+  gpuCount: z.number().int().min(1).max(1024),
+  billedHours: z.number().min(0).max(87600),
+  pricingModel: z.enum(["on-demand", "preemptible"]).optional(),
+  billingUnit: z.enum(["GPU-hour", "instance-hour"]).optional(),
+  customHourlyRateUsd: z.number().min(0).optional().nullable(),
+  storageGb: z.number().min(0).optional(),
+  storageRatePerGbMonthUsd: z.number().min(0).optional(),
+  networkEgressGb: z.number().min(0).optional(),
+  networkEgressRatePerGbUsd: z.number().min(0).optional(),
+});
+
+const ModelInferenceInputSchema = z.object({
+  modelName: z.string().max(100),
+  inputTokensMillion: z.number().min(0).max(100000),
+  outputTokensMillion: z.number().min(0).max(100000),
+  inputTokenRatePerMillionUsd: z.number().min(0).optional().nullable(),
+  outputTokenRatePerMillionUsd: z.number().min(0).optional().nullable(),
+  requestCount: z.number().min(0).optional(),
+  rateSourceUrl: z.string().max(300).optional(),
+  lastVerifiedDate: z.string().max(50).optional(),
+  isRateVerified: z.boolean().optional(),
+});
+
+export const FinOpsCalculateRequestSchema = z.object({
+  baselineGpu: GpuWorkloadInputSchema.optional(),
+  baselineModel: ModelInferenceInputSchema.optional(),
+  proposedGpu: GpuWorkloadInputSchema.optional(),
+  proposedModel: ModelInferenceInputSchema.optional(),
+  context: z
+    .object({
+      baselineGpuId: z.string().max(100).optional(),
+      proposedGpuId: z.string().max(100).optional(),
+      baselinePrecision: z.string().max(30).optional(),
+      proposedPrecision: z.string().max(30).optional(),
+      modelParamBillion: z.number().min(0).max(2000).optional(),
+      isEmpiricallyBenchmarked: z.boolean().optional(),
+    })
+    .optional(),
+});
+
+export const PreflightRequestSchema = z.object({
+  dockerfileContent: z.string().max(2000000).optional(),
+  requirementsContent: z.string().max(2000000).optional(),
+  workloadConfigContent: z.string().max(2000000).optional(),
+  diagnosticLogContent: z.string().max(3000000).optional(),
+  projectName: z.string().max(200).optional(),
+  targetGpu: z.string().max(100).optional(),
+  gpuCount: z.number().int().min(1).max(1024).optional(),
+  precision: z.string().max(30).optional(),
+  contextLengthTokens: z.number().min(1).max(1000000).optional(),
+  batchSize: z.number().min(1).max(100000).optional(),
+  customRules: z.array(z.any()).max(50).optional(),
+});
+
+export const PassportRequestSchema = z.object({
+  projectName: z.string().max(200).optional(),
+  targetGpu: z.string().max(100).optional(),
+  gpuCount: z.number().int().min(1).max(1024).optional(),
+  format: z.enum(["json", "html"]).optional().default("json"),
+  preflightReport: z.any().optional(),
+  diagnosticResult: z.any().optional(),
+  citations: z.array(z.any()).max(50).optional(),
+  finopsComparison: z.any().optional(),
+  fallbackFinops: z.any().optional(),
+  proposedPatch: z.any().optional(),
+});
+
 /**
  * Helper to format Zod validation errors into a single concise string.
  */

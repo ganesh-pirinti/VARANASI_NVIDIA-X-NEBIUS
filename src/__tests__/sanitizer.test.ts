@@ -43,4 +43,21 @@ describe("Sanitizer & Privacy Guard", () => {
     expect(truncated).toContain("Line 200:");
     expect(truncated).toContain("Truncated 150 lines");
   });
+
+  it("redacts Cloudflare Turnstile secret keys", () => {
+    const text = "Turnstile secret: 0x4AAAAAAAxxxxxxxxxxxxxxxxxxxxxx or test key 1x0000000000000000000000000000000AA";
+    const result = sanitizeText(text);
+
+    expect(result.sanitizedText).not.toContain("0x4AAAAAAA");
+    expect(result.sanitizedText).not.toContain("1x0000000000000000000000000000000AA");
+    expect(result.sanitizedText).toContain("[REDACTED_CLOUDFLARE_KEY]");
+  });
+
+  it("redacts database connection URIs", () => {
+    const text = "DATABASE_URL=postgresql://nebius_user:SuperSecretP@ss@db.nebius.internal:5432/varanasi_db";
+    const result = sanitizeText(text);
+
+    expect(result.sanitizedText).not.toContain("SuperSecretP@ss");
+    expect(result.sanitizedText).toContain("[REDACTED_DB_CONNECTION]");
+  });
 });

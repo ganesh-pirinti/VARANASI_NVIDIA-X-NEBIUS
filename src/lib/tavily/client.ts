@@ -68,7 +68,10 @@ export async function executeTavilySearch(
 
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
-      const errorMsg = `Tavily API responded with status ${response.status}: ${errText.slice(0, 200)}`;
+      const isRateLimited = response.status === 429;
+      const errorMsg = isRateLimited
+        ? "Tavily API search rate limit exceeded (HTTP 429). Search endpoint throttled. Please retry shortly."
+        : `Tavily API responded with status ${response.status}: ${errText.slice(0, 200)}`;
       const globalAny = globalThis as unknown as { __tavilyLastVerified?: { success: boolean; error?: string; timestamp: number } };
       globalAny.__tavilyLastVerified = { success: false, error: errorMsg, timestamp: Date.now() };
       return {

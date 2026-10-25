@@ -247,21 +247,21 @@ For local development, staging, or automated CI/CD runs without solving interact
 
 ## 9. Test Suite & Verification Results
 
-VARANASI is backed by 58 automated unit tests across 8 test suites covering deterministic logic, security guardrails, and external provider isolation:
+VARANASI is backed by 72 automated unit tests across 8 test suites covering deterministic logic, security guardrails, resilient JSON parsing, prompt injection defense, and external provider isolation:
 
 ```bash
 npm test
 ```
 
 ### Verified Test Suites:
+- `src/__tests__/preflight.test.ts` (13 tests): Dockerfile checks, PyTorch/CUDA compatibility, `/dev/shm` shared memory checks, CUDA OOM log parsing, VRAM estimation, 5MB body size limits, and route validation.
+- `src/__tests__/finops.test.ts` (12 tests): GPU cost formulas, instance-hour conversion, On-Demand vs Preemptible rates, token pricing, waste detection, numeric bounds, and API route validation.
 - `src/__tests__/turnstile.test.ts` (10 tests): Cloudflare siteverify validation, fail-closed policy on missing secrets, hostname whitelisting, action binding, token expiration/reuse handling, bounded timeouts, and upstream network error recovery.
 - `src/__tests__/protected-routes.test.ts` (10 tests): Route-level token enforcement on `/api/diagnose` and `/api/tavily-search`, verifying that Nebius and Tavily are never invoked on unverified requests, and server-side rate-limit thresholds.
 - `src/__tests__/status.test.ts` (9 tests): Status state machine, cold starts, client timestamps, `verifyInference` probe, and decoupling search execution from status polling.
-- `src/__tests__/finops.test.ts` (9 tests): GPU cost formulas, instance-hour conversion, On-Demand vs Preemptible rates, token pricing, waste detection.
-- `src/__tests__/preflight.test.ts` (10 tests): Dockerfile checks, PyTorch/CUDA compatibility, `/dev/shm` shared memory checks, CUDA OOM log parsing, VRAM estimation.
-- `src/__tests__/passport.test.ts` (2 tests): Passport schema assembly, audit trail recording, secret exclusion, SHA-256 integrity hash verification, standalone HTML export.
-- `src/__tests__/sanitizer.test.ts` (4 tests): Secret masking for Bearer tokens, `sk-...` / `neb-...` keys, and credential pairs.
-- `src/__tests__/external-apis.test.ts` (4 tests): Handling missing keys, network timeouts, and graceful degradation.
+- `src/__tests__/external-apis.test.ts` (7 tests): Handling missing keys, network timeouts, conversational markdown JSON extraction, untrusted log isolation within security boundary tags, and explicit Tavily 429 rate limit errors.
+- `src/__tests__/sanitizer.test.ts` (6 tests): Secret masking for Bearer tokens, `sk-...` / `neb-...` keys, credential pairs, Cloudflare keys, JWTs, and database URIs.
+- `src/__tests__/passport.test.ts` (5 tests): Passport schema assembly, audit trail recording, secret exclusion, SHA-256 integrity hash verification, standalone HTML export, and API route validation.
 
 ---
 
@@ -280,7 +280,7 @@ npm install
 cp .env.example .env.local
 # Set NEBIUS_API_KEY, TAVILY_API_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY, and TURNSTILE_SECRET_KEY
 
-# 4. Run test suite (all 58 tests must pass)
+# 4. Run test suite (all 72 tests must pass)
 npm test
 
 # 5. Start development server

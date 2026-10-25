@@ -5,6 +5,8 @@ import { checkDependencies } from "@/lib/preflight/dependencies";
 import { checkWorkloadConfig } from "@/lib/preflight/workload-config";
 import { analyzeDiagnosticLog } from "@/lib/preflight/log-analyzer";
 import { estimateVram } from "@/lib/preflight/vram-estimator";
+import { POST as handlePreflight } from "@/app/api/preflight/route";
+import { NextRequest } from "next/server";
 
 describe("Deterministic Preflight Engine", () => {
   it("assigns UNKNOWN to checks when inputs are omitted (NEVER defaults to PASS)", () => {
@@ -203,5 +205,60 @@ RuntimeError: DataLoader worker (pid 220) is killed by signal: Bus error.`;
 
     const shmCheck = reverifiedReport.checks.find((c) => c.id === "check-workload-config");
     expect(shmCheck?.status).toBe("PASS");
+  });
+
+  describe("Preflight API Route (/api/preflight)", () => {
+    it("returns HTTP 200 for valid preflight evaluation request", async () => {
+      const req = new NextRequest("http://localhost:3000/api/preflight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName: "Production Llama Serving",
+          targetGpu: "nebius-h100-sxm",
+          gpuCount: 8,
+          workloadConfigContent: "shm_size: '16gb'\nipc: 'host'",
+        }),
+      });
+
+      const res = await handlePreflight(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.projectName).toBe("Production Llama Serving");
+      expect(data.checks).toBeDefined();
+    });
+
+    it("returns HTTP 400 for malformed JSON request", async () => {
+      const req = new NextRequest("http://localhost:3000/api/preflight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{malformed_json: true",
+      });
+
+      const res = await handlePreflight(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toContain("Malformed JSON");
+    });
+
+    it("returns HTTP 413 when payload exceeds safe size limit (5MB)", async () => {
+      // Create a 5.5MB mock string
+      const hugeLog = "X".repeat(5.5 * 1024 * 1024);
+
+      const req = new NextRequest("http://localhost:3000/api/preflight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          diagnosticLogContent: hugeLog,
+        }),
+      });
+
+      const res = await handlePreflight(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(413);
+      expect(data.error).toContain("exceeds safe maximum limit");
+    });
   });
 });

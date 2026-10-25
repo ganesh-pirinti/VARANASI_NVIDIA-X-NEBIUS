@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { calculateFinOpsCost, compareFinOpsConfigurations } from "@/lib/finops/calculator";
 import { VERIFIED_GPU_CATALOG } from "@/lib/constants";
+import { POST as handleFinOpsCalculate } from "@/app/api/finops/calculate/route";
+import { NextRequest } from "next/server";
 
 describe("Audited FinOps Calculation Engine (https://nebius.com/prices)", () => {
   it("calculates exact Nebius H100 compute cost at official verified on-demand rate ($4.50/GPU-hr)", () => {
@@ -208,5 +210,64 @@ describe("Audited FinOps Calculation Engine (https://nebius.com/prices)", () => 
     expect(comparison.deltaCostUsd).toBe(-29.5);
     expect(comparison.savingsClassification).toBe("NEGATIVE_SAVINGS");
     expect(comparison.feasibilityTradeoffs.some((t) => t.includes("increases total spend"))).toBe(true);
+  });
+
+  describe("FinOps API Route (/api/finops/calculate)", () => {
+    it("returns HTTP 200 for valid GPU calculate request", async () => {
+      const req = new NextRequest("http://localhost:3000/api/finops/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          baselineGpu: {
+            gpuId: "nebius-h100-sxm",
+            gpuCount: 8,
+            billedHours: 100,
+            pricingModel: "on-demand",
+            billingUnit: "GPU-hour",
+          },
+        }),
+      });
+
+      const res = await handleFinOpsCalculate(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.type).toBe("SINGLE");
+      expect(data.result.totalCostUsd).toBe(3600);
+    });
+
+    it("returns HTTP 400 for malformed JSON request", async () => {
+      const req = new NextRequest("http://localhost:3000/api/finops/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "malformed-json{",
+      });
+
+      const res = await handleFinOpsCalculate(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toContain("Malformed JSON");
+    });
+
+    it("returns HTTP 400 when numbers violate bounds (e.g. negative gpuCount or negative hours)", async () => {
+      const req = new NextRequest("http://localhost:3000/api/finops/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          baselineGpu: {
+            gpuId: "nebius-h100-sxm",
+            gpuCount: -5,
+            billedHours: 10,
+          },
+        }),
+      });
+
+      const res = await handleFinOpsCalculate(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toBeDefined();
+    });
   });
 });

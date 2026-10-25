@@ -34,7 +34,25 @@ const SENSITIVE_PATTERNS: { regex: RegExp; replacement: string; name: string }[]
     regex: /"private_key":\s*"-----BEGIN PRIVATE KEY-----[^"]+"/g,
     replacement: '"private_key": "[REDACTED_PRIVATE_KEY]"',
     name: "PRIVATE_KEY_JSON",
-  }
+  },
+  // Cloudflare Turnstile Secret Key (e.g. 0x4AAAAAA... or 1x000...)
+  {
+    regex: /(?:0x|1x|2x)[0-9A-Fa-f]{20,}/g,
+    replacement: "[REDACTED_CLOUDFLARE_KEY]",
+    name: "CLOUDFLARE_SECRET_KEY",
+  },
+  // JSON Web Token (JWT)
+  {
+    regex: /eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/g,
+    replacement: "[REDACTED_JWT_TOKEN]",
+    name: "JWT_TOKEN",
+  },
+  // Database connection URI with credentials
+  {
+    regex: /(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?):\/\/[^\s"']+/gi,
+    replacement: "[REDACTED_DB_CONNECTION]",
+    name: "DB_CONNECTION_STRING",
+  },
 ];
 
 /**

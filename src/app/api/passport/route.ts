@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateRunCostPassport, renderPassportHtml } from "@/lib/passport/generator";
+import { PassportRequestSchema, formatZodError } from "@/lib/security/validators";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let rawBody;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Malformed JSON request body." },
+        { status: 400 }
+      );
+    }
+
+    const validation = PassportRequestSchema.safeParse(rawBody);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: formatZodError(validation.error) },
+        { status: 400 }
+      );
+    }
+
+    const body = validation.data;
     const format = body.format || "json";
 
     const passport = generateRunCostPassport({

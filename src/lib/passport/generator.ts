@@ -9,7 +9,7 @@ export interface BuildPassportOptions {
   projectName: string;
   targetGpu: string;
   gpuCount: number;
-  preflightReport: PreflightReport;
+  preflightReport?: PreflightReport;
   diagnosticResult?: {
     success: boolean;
     modelUsed: string;
@@ -29,6 +29,16 @@ export interface BuildPassportOptions {
 export function generateRunCostPassport(options: BuildPassportOptions): RunCostPassport {
   const timestamp = new Date().toISOString();
   const id = `rcp-${Date.now()}`;
+
+  const preflightReport: PreflightReport = options.preflightReport || {
+    id: `preflight-${Date.now()}`,
+    projectName: options.projectName,
+    timestamp,
+    overallStatus: "UNKNOWN",
+    checks: [],
+    findings: [],
+    unresolvedRisks: [],
+  };
 
   const nebiusModel = options.diagnosticResult?.modelUsed || process.env.NEBIUS_MODEL || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
   const baseUrl = (process.env.NEBIUS_BASE_URL || "https://api.tokenfactory.nebius.com/v1").replace(/\/+$/, "");
@@ -79,7 +89,7 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
       step: "DETERMINISTIC_PREFLIGHT",
       actor: "SYSTEM_DETERMINISTIC",
       timestamp,
-      details: `Evaluated ${options.preflightReport.checks.length} static and runtime checks. Overall status: ${options.preflightReport.overallStatus}`,
+      details: `Evaluated ${preflightReport.checks.length} static and runtime checks. Overall status: ${preflightReport.overallStatus}`,
     },
   ];
 
@@ -121,8 +131,8 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
       gpuCount: options.gpuCount,
       nebiusModel,
     },
-    overallRunGuardStatus: options.preflightReport.overallStatus,
-    preflightChecksCount: options.preflightReport.checks.length,
+    overallRunGuardStatus: preflightReport.overallStatus,
+    preflightChecksCount: preflightReport.checks.length,
     finopsSummary: {
       baselineCostUsd: baselineCost,
       proposedCostUsd: proposedCost,
@@ -144,10 +154,10 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
       nebiusModel,
       sanitizedBaseUrl: baseUrl,
     },
-    overallRunGuardStatus: options.preflightReport.overallStatus,
-    preflightChecks: options.preflightReport.checks,
+    overallRunGuardStatus: preflightReport.overallStatus,
+    preflightChecks: preflightReport.checks,
     diagnosticInvestigation,
-    proposedPatch: options.proposedPatch || options.preflightReport.suggestedPatch,
+    proposedPatch: options.proposedPatch || preflightReport.suggestedPatch,
     finopsSummary: {
       baselineCostUsd: baselineCost,
       proposedCostUsd: proposedCost,
@@ -158,7 +168,7 @@ export function generateRunCostPassport(options: BuildPassportOptions): RunCostP
       assumptions,
       priceSources,
     },
-    unresolvedRisks: options.preflightReport.unresolvedRisks,
+    unresolvedRisks: preflightReport.unresolvedRisks || [],
     auditTrail,
   };
 }

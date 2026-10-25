@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { generateRunCostPassport, renderPassportHtml } from "@/lib/passport/generator";
 import { runPreflightChecks } from "@/lib/preflight/engine";
 import { calculateFinOpsCost, compareFinOpsConfigurations } from "@/lib/finops/calculator";
+import { POST as handlePassport } from "@/app/api/passport/route";
+import { NextRequest } from "next/server";
 
 describe("Run & Cost Passport Generation", () => {
   it("generates a complete structured passport with audit trail and calculations", () => {
@@ -76,5 +78,64 @@ describe("Run & Cost Passport Generation", () => {
     expect(html).toContain(passport.id);
     expect(html).toContain(passport.integrityHash!);
     expect(html).toContain("SHA-256 Integrity Hash");
+  });
+
+  describe("Passport API Route (/api/passport)", () => {
+    it("returns HTTP 200 with JSON payload for standard passport request", async () => {
+      const req = new NextRequest("http://localhost:3000/api/passport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName: "Production Llama Manifest",
+          targetGpu: "nebius-h100-sxm",
+          gpuCount: 8,
+          format: "json",
+        }),
+      });
+
+      const res = await handlePassport(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.id).toBeDefined();
+      expect(data.targetEnvironment.projectName).toBe("Production Llama Manifest");
+      expect(data.integrityHash).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it("returns HTTP 200 with HTML attachment when format is 'html'", async () => {
+      const req = new NextRequest("http://localhost:3000/api/passport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName: "Export HTML Test",
+          targetGpu: "nebius-h100-sxm",
+          gpuCount: 4,
+          format: "html",
+        }),
+      });
+
+      const res = await handlePassport(req);
+      const htmlText = await res.text();
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toContain("text/html");
+      expect(res.headers.get("Content-Disposition")).toContain("attachment;");
+      expect(htmlText).toContain("<!DOCTYPE html>");
+      expect(htmlText).toContain("Export HTML Test");
+    });
+
+    it("returns HTTP 400 when request body contains malformed JSON", async () => {
+      const req = new NextRequest("http://localhost:3000/api/passport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "bad-json",
+      });
+
+      const res = await handlePassport(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toContain("Malformed JSON");
+    });
   });
 });
