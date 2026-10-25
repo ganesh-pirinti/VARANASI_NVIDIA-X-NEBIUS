@@ -87,7 +87,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
           <div>
             <h2 className="text-base font-bold text-text-primary flex items-center gap-2.5">
-              <ShieldAlert className="h-5 w-5 text-nebius-cyan" />
+              <ShieldAlert className="h-5 w-5 text-nvidia-green" />
               <span>GPU RunGuard — Preflight &amp; Runtime Diagnostic Inspection</span>
             </h2>
             <p className="text-xs text-text-muted mt-1 leading-relaxed">
@@ -97,7 +97,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
           <button
             onClick={onRunPreflight}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 rounded-xl bg-nebius-cyan px-6 py-3 text-xs font-bold text-app hover:bg-nebius-soft disabled:opacity-50 transition shadow-nebius-glow shrink-0"
+            className="flex items-center justify-center gap-2 rounded-xl bg-nvidia-green px-6 py-3 text-xs font-bold text-app hover:bg-nvidia-light disabled:opacity-50 transition shadow-nvidia-glow shrink-0"
           >
             <Play className="h-4 w-4 fill-app text-app" />
             <span>{isLoading ? "Running Checks..." : "Run Preflight Checks"}</span>
@@ -112,7 +112,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               type="text"
               value={inputs.projectName}
               onChange={(e) => setInputs({ ...inputs, projectName: e.target.value })}
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
               placeholder="e.g. Nemotron-FineTuning-Job"
             />
           </div>
@@ -122,7 +122,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
             <select
               value={inputs.targetGpu}
               onChange={(e) => setInputs({ ...inputs, targetGpu: e.target.value })}
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
             >
               {VERIFIED_GPU_CATALOG.map((g) => (
                 <option key={g.id} value={g.id}>
@@ -140,7 +140,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               max="1024"
               value={inputs.gpuCount}
               onChange={(e) => setInputs({ ...inputs, gpuCount: parseInt(e.target.value, 10) || 1 })}
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
             />
           </div>
 
@@ -154,7 +154,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               onChange={(e) =>
                 setInputs({ ...inputs, estimatedModelParamsBillion: parseFloat(e.target.value) || undefined })
               }
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
               placeholder="e.g. 70 for Nemotron 70B"
             />
           </div>
@@ -166,7 +166,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               onChange={(e) =>
                 setInputs({ ...inputs, precision: e.target.value as "FP32" | "FP16" | "BF16" | "FP8" | "INT4" })
               }
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
             >
               <option value="FP32">FP32 (Single Precision - 4 bytes)</option>
               <option value="FP16">FP16 (Half Precision - 2 bytes)</option>
@@ -184,7 +184,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               step="512"
               value={inputs.contextLengthTokens || 4096}
               onChange={(e) => setInputs({ ...inputs, contextLengthTokens: parseInt(e.target.value, 10) || 4096 })}
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
             />
           </div>
 
@@ -195,7 +195,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               min="1"
               value={inputs.batchSize || 1}
               onChange={(e) => setInputs({ ...inputs, batchSize: parseInt(e.target.value, 10) || 1 })}
-              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+              className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
             />
           </div>
         </div>
@@ -210,7 +210,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               onClick={() => setActiveFileTab("config")}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                 activeFileTab === "config"
-                  ? "bg-surface-card text-nebius-cyan border border-border-standard shadow-sm"
+                  ? "bg-surface-card text-nvidia-green border border-border-standard shadow-sm"
                   : "text-text-muted hover:text-text-primary"
               }`}
             >
@@ -220,7 +220,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               onClick={() => setActiveFileTab("log")}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                 activeFileTab === "log"
-                  ? "bg-surface-card text-nebius-cyan border border-border-standard shadow-sm"
+                  ? "bg-surface-card text-nvidia-green border border-border-standard shadow-sm"
                   : "text-text-muted hover:text-text-primary"
               }`}
             >
@@ -230,7 +230,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               onClick={() => setActiveFileTab("deps")}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                 activeFileTab === "deps"
-                  ? "bg-surface-card text-nebius-cyan border border-border-standard shadow-sm"
+                  ? "bg-surface-card text-nvidia-green border border-border-standard shadow-sm"
                   : "text-text-muted hover:text-text-primary"
               }`}
             >
@@ -240,7 +240,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               onClick={() => setActiveFileTab("docker")}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                 activeFileTab === "docker"
-                  ? "bg-surface-card text-nebius-cyan border border-border-standard shadow-sm"
+                  ? "bg-surface-card text-nvidia-green border border-border-standard shadow-sm"
                   : "text-text-muted hover:text-text-primary"
               }`}
             >
@@ -248,8 +248,8 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
             </button>
           </div>
 
-          <label className="flex items-center gap-1.5 cursor-pointer rounded-lg border border-border-standard bg-surface-card px-3 py-1.5 text-[11px] font-semibold text-text-secondary hover:border-nebius-cyan/50 hover:text-text-primary transition shadow-sm">
-            <Upload className="h-3 w-3 text-nebius-cyan" />
+          <label className="flex items-center gap-1.5 cursor-pointer rounded-lg border border-border-standard bg-surface-card px-3 py-1.5 text-[11px] font-semibold text-text-secondary hover:border-nvidia-green hover:text-text-primary transition shadow-sm">
+            <Upload className="h-3 w-3 text-nvidia-green" />
             <span>Upload File</span>
             <input
               type="file"
@@ -341,7 +341,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
             <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-4 shadow-card">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5">
-                  <HardDrive className="h-4 w-4 text-nebius-cyan" />
+                  <HardDrive className="h-4 w-4 text-nvidia-green" />
                   <h4 className="text-xs font-bold uppercase tracking-wider text-text-primary">
                     Deterministic VRAM &amp; Memory Headroom Calculation
                   </h4>
@@ -400,7 +400,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
                 </div>
                 <div className="rounded-xl border border-border-subtle bg-surface-input p-3.5">
                   <div className="text-[10px] text-text-muted uppercase">Total Estimated vs Physical</div>
-                  <div className={`text-sm font-bold mt-1 font-mono ${preflightReport.vramEstimate.isFeasible ? "text-nebius-cyan" : "text-status-error"}`}>
+                  <div className={`text-sm font-bold mt-1 font-mono ${preflightReport.vramEstimate.isFeasible ? "text-nvidia-green" : "text-status-error"}`}>
                     {preflightReport.vramEstimate.totalEstimatedVramGb} / {preflightReport.vramEstimate.gpuMemoryAvailableGb} GiB
                   </div>
                 </div>
@@ -409,7 +409,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
               <div className="text-[11px] text-text-muted space-y-1.5 pt-1">
                 {preflightReport.vramEstimate.notes.map((note, idx) => (
                   <div key={idx} className="flex items-start gap-2">
-                    <Info className="h-3.5 w-3.5 text-nebius-cyan shrink-0 mt-0.5" />
+                    <Info className="h-3.5 w-3.5 text-nvidia-green shrink-0 mt-0.5" />
                     <span>{note}</span>
                   </div>
                 ))}
@@ -446,7 +446,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
                       </td>
                       <td className="py-3.5 px-5">
                         {check.isRuntimeTest ? (
-                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-nebius-cyan font-semibold bg-nebius-cyan/15 px-2 py-0.5 rounded-md border border-nebius-cyan/35">
+                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-nvidia-green font-semibold bg-nvidia-surface px-2 py-0.5 rounded-md border border-nvidia-border">
                             Runtime Test
                           </span>
                         ) : (
@@ -478,7 +478,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
                 {preflightReport.findings.map((finding) => (
                   <div
                     key={finding.id}
-                    className="rounded-xl border border-border-standard bg-surface-card p-5 space-y-3 hover:border-nebius-cyan/40 transition shadow-card"
+                    className="rounded-xl border border-border-standard bg-surface-card p-5 space-y-3 hover:border-border-active transition shadow-card"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
@@ -496,7 +496,7 @@ export const RunGuardTab: React.FC<RunGuardTabProps> = ({
                       {finding.description}
                     </p>
 
-                    <div className="rounded-lg bg-surface-input p-3 font-mono text-[11px] text-nebius-cyan border border-border-subtle">
+                    <div className="rounded-lg bg-surface-input p-3 font-mono text-[11px] text-text-primary border border-border-subtle">
                       <div className="text-[10px] text-text-muted mb-1 uppercase font-semibold">Evidence:</div>
                       {finding.evidence}
                     </div>

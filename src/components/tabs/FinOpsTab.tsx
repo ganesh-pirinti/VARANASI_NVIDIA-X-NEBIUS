@@ -114,7 +114,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                 href="https://nebius.com/prices"
                 target="_blank"
                 rel="noreferrer"
-                className="text-nebius-cyan underline hover:text-nebius-soft"
+                className="text-nvidia-green underline hover:text-nvidia-light"
               >
                 https://nebius.com/prices
               </a>
@@ -144,7 +144,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
             href="https://nebius.com/prices"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-[11px] font-mono text-nebius-cyan hover:text-nebius-soft shrink-0 self-end sm:self-auto font-medium"
+            className="inline-flex items-center gap-1.5 text-[11px] font-mono text-nvidia-green hover:underline shrink-0 self-end sm:self-auto font-medium"
           >
             <span>nebius.com/prices</span>
             <ExternalLink className="h-3 w-3" />
@@ -176,7 +176,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     customHourlyRateUsd: null,
                   });
                 }}
-                className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
               >
                 {VERIFIED_GPU_CATALOG.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -196,7 +196,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     onClick={() => setBaselineGpu({ ...baselineGpu, pricingModel: "on-demand", customHourlyRateUsd: null })}
                     className={`py-1 text-[11px] font-semibold rounded-md transition ${
                       (baselineGpu.pricingModel || "on-demand") === "on-demand"
-                        ? "bg-surface-elevated text-nebius-cyan border border-nebius-cyan/35 shadow-sm"
+                        ? "bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm"
                         : "text-text-muted hover:text-text-primary"
                     }`}
                   >
@@ -224,7 +224,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     onClick={() => setBaselineGpu({ ...baselineGpu, billingUnit: "GPU-hour" })}
                     className={`py-1 text-[11px] font-semibold rounded-md transition ${
                       (baselineGpu.billingUnit || "GPU-hour") === "GPU-hour"
-                        ? "bg-surface-elevated text-nebius-cyan border border-nebius-cyan/35 shadow-sm"
+                        ? "bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm"
                         : "text-text-muted hover:text-text-primary"
                     }`}
                   >
@@ -235,7 +235,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     onClick={() => setBaselineGpu({ ...baselineGpu, billingUnit: "instance-hour" })}
                     className={`py-1 text-[11px] font-semibold rounded-md transition ${
                       baselineGpu.billingUnit === "instance-hour"
-                        ? "bg-surface-elevated text-nebius-cyan border border-nebius-cyan/35 shadow-sm"
+                        ? "bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm"
                         : "text-text-muted hover:text-text-primary"
                     }`}
                   >
@@ -255,7 +255,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   onChange={(e) =>
                     setBaselineGpu({ ...baselineGpu, gpuCount: parseInt(e.target.value, 10) || 1 })
                   }
-                  className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                  className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                 />
               </div>
 
@@ -268,7 +268,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   onChange={(e) =>
                     setBaselineGpu({ ...baselineGpu, billedHours: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                  className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                 />
               </div>
             </div>
@@ -283,7 +283,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   <button
                     type="button"
                     onClick={() => setBaselineGpu({ ...baselineGpu, customHourlyRateUsd: null })}
-                    className="flex items-center gap-1 text-[10px] text-nebius-cyan hover:text-nebius-soft"
+                    className="flex items-center gap-1 text-[10px] text-text-primary hover:text-nvidia-green"
                   >
                     <RotateCcw className="h-3 w-3" />
                     <span>Reset to Verified Default</span>
@@ -307,7 +307,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                       ? "border-status-warning/70 bg-status-warning/10 placeholder-status-warning/60"
                       : baselineRateInfo.isCustom
                       ? "border-status-warning/50 bg-surface-input"
-                      : "border-border-standard bg-surface-input focus:border-nebius-cyan"
+                      : "border-border-standard bg-surface-input focus:border-nvidia-green"
                   }`}
                 />
               </div>
@@ -334,7 +334,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     href={baselineCatalogGpu.priceSourceUrl.split(" ")[0]}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-text-muted hover:text-nebius-cyan truncate max-w-[160px]"
+                    className="text-text-muted hover:text-nvidia-green truncate max-w-[160px]"
                   >
                     Source Link
                   </a>
@@ -361,7 +361,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                           inputTokensMillion: parseFloat(e.target.value) || 0,
                         })
                       }
-                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                     />
                   </div>
                   <div>
@@ -377,7 +377,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                           outputTokensMillion: parseFloat(e.target.value) || 0,
                         })
                       }
-                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                     />
                   </div>
                 </div>
@@ -387,12 +387,12 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
         </div>
 
         {/* Proposed Alternative (Nebius / Candidate) */}
-        <div className="rounded-2xl border border-nebius-cyan/40 bg-surface-card p-6 space-y-5 shadow-card hover:border-nebius-cyan transition">
+        <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-5 shadow-card hover:border-nvidia-border transition">
           <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-nebius-cyan">
+            <span className="text-xs font-bold uppercase tracking-wider text-nvidia-green">
               Proposed Alternative (Nebius AI Cloud Candidate)
             </span>
-            <span className="text-[11px] font-mono text-nebius-cyan font-semibold">Optimized Candidate</span>
+            <span className="text-[11px] font-mono text-nvidia-green font-semibold">Optimized Candidate</span>
           </div>
 
           <div className="space-y-4 text-xs">
@@ -408,7 +408,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     customHourlyRateUsd: null,
                   });
                 }}
-                className="w-full rounded-lg border border-nebius-cyan/40 bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
               >
                 {VERIFIED_GPU_CATALOG.filter((g) => g.provider === "Nebius").map((g) => (
                   <option key={g.id} value={g.id}>
@@ -428,7 +428,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     onClick={() => setProposedGpu({ ...proposedGpu, pricingModel: "on-demand", customHourlyRateUsd: null })}
                     className={`py-1 text-[11px] font-semibold rounded-md transition ${
                       (proposedGpu.pricingModel || "on-demand") === "on-demand"
-                        ? "bg-surface-elevated text-nebius-cyan border border-nebius-cyan/40 shadow-sm"
+                        ? "bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm"
                         : "text-text-muted hover:text-text-primary"
                     }`}
                   >
@@ -456,7 +456,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     onClick={() => setProposedGpu({ ...proposedGpu, billingUnit: "GPU-hour" })}
                     className={`py-1 text-[11px] font-semibold rounded-md transition ${
                       (proposedGpu.billingUnit || "GPU-hour") === "GPU-hour"
-                        ? "bg-surface-elevated text-nebius-cyan border border-nebius-cyan/40 shadow-sm"
+                        ? "bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm"
                         : "text-text-muted hover:text-text-primary"
                     }`}
                   >
@@ -467,7 +467,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     onClick={() => setProposedGpu({ ...proposedGpu, billingUnit: "instance-hour" })}
                     className={`py-1 text-[11px] font-semibold rounded-md transition ${
                       proposedGpu.billingUnit === "instance-hour"
-                        ? "bg-surface-elevated text-nebius-cyan border border-nebius-cyan/40 shadow-sm"
+                        ? "bg-surface-elevated text-nvidia-green border border-nvidia-border shadow-sm"
                         : "text-text-muted hover:text-text-primary"
                     }`}
                   >
@@ -487,7 +487,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   onChange={(e) =>
                     setProposedGpu({ ...proposedGpu, gpuCount: parseInt(e.target.value, 10) || 1 })
                   }
-                  className="w-full rounded-lg border border-nebius-cyan/40 bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                  className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                 />
               </div>
 
@@ -500,7 +500,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   onChange={(e) =>
                     setProposedGpu({ ...proposedGpu, billedHours: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full rounded-lg border border-nebius-cyan/40 bg-surface-input px-3.5 py-2 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                  className="w-full rounded-lg border border-border-standard bg-surface-input px-3.5 py-2 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                 />
               </div>
             </div>
@@ -515,7 +515,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                   <button
                     type="button"
                     onClick={() => setProposedGpu({ ...proposedGpu, customHourlyRateUsd: null })}
-                    className="flex items-center gap-1 text-[10px] text-nebius-cyan hover:text-nebius-soft"
+                    className="flex items-center gap-1 text-[10px] text-text-primary hover:text-nvidia-green"
                   >
                     <RotateCcw className="h-3 w-3" />
                     <span>Reset to Verified Default</span>
@@ -539,7 +539,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                       ? "border-status-warning/70 bg-status-warning/10 placeholder-status-warning/60"
                       : proposedRateInfo.isCustom
                       ? "border-status-warning/50 bg-surface-input"
-                      : "border-nebius-cyan/40 bg-surface-input focus:border-nebius-cyan"
+                      : "border-border-standard bg-surface-input focus:border-nvidia-green"
                   }`}
                 />
               </div>
@@ -566,7 +566,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                     href="https://nebius.com/prices"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-nebius-cyan hover:underline flex items-center gap-1"
+                    className="text-text-primary hover:text-nvidia-green hover:underline flex items-center gap-1"
                   >
                     <span>nebius.com/prices</span>
                     <ExternalLink className="h-3 w-3" />
@@ -594,7 +594,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                           inputTokensMillion: parseFloat(e.target.value) || 0,
                         })
                       }
-                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                     />
                   </div>
                   <div>
@@ -610,7 +610,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                           outputTokensMillion: parseFloat(e.target.value) || 0,
                         })
                       }
-                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nebius-cyan focus:outline-none transition"
+                      className="w-full rounded-lg border border-border-standard bg-surface-input px-3 py-1.5 text-text-primary focus:border-nvidia-green focus:outline-none transition"
                     />
                   </div>
                 </div>
@@ -703,7 +703,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
 
               <div className="rounded-xl border border-border-subtle bg-surface-input p-4">
                 <div className="text-[10px] text-text-muted uppercase">Proposed Total Cost</div>
-                <div className="text-base font-bold text-nebius-cyan mt-1">
+                <div className="text-base font-bold text-text-primary mt-1">
                   ${comparisonResult.proposed.totalCostUsd.toFixed(2)}
                 </div>
                 <div className="text-[10px] text-text-muted mt-1">
@@ -782,7 +782,7 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-5 text-nebius-cyan font-mono text-[11px] truncate max-w-xs">
+                        <td className="py-3.5 px-5 text-text-primary hover:text-nvidia-green font-mono text-[11px] truncate max-w-xs">
                           {ps.sourceUrl.startsWith("http") ? (
                             <a
                               href={ps.sourceUrl}
@@ -854,13 +854,13 @@ export const FinOpsTab: React.FC<FinOpsTabProps> = ({
 
             <div className="rounded-2xl border border-border-standard bg-surface-card p-5 space-y-2.5 shadow-card">
               <h4 className="font-bold uppercase tracking-wider text-text-muted text-[11px] flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-nebius-cyan" />
+                <ShieldCheck className="h-3.5 w-3.5 text-nvidia-green" />
                 <span>Missing Evidence &amp; Performance Disclaimers</span>
               </h4>
               <ul className="space-y-2 text-text-muted leading-relaxed">
                 {comparisonResult.missingEvidenceWarnings.map((m, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-nebius-cyan font-bold">•</span>
+                    <span className="text-nvidia-green font-bold">•</span>
                     <span>{m}</span>
                   </li>
                 ))}

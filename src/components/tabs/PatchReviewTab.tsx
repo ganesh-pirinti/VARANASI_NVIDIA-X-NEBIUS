@@ -33,7 +33,7 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
   if (!proposedPatch) {
     return (
       <div className="rounded-2xl border border-border-standard bg-surface-card p-12 text-center space-y-4 shadow-card">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-elevated text-nebius-cyan border border-border-standard shadow-sm">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-elevated text-nvidia-green border border-border-standard shadow-sm">
           <FileCode className="h-7 w-7" />
         </div>
         <h3 className="text-base font-bold text-text-primary">No Remediation Patch Generated</h3>
@@ -42,7 +42,7 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
         </p>
         <button
           onClick={() => setActiveTab("runguard")}
-          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-nebius-cyan px-5 py-2.5 text-xs font-bold text-app hover:bg-nebius-soft transition shadow-nebius-glow"
+          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-nvidia-green px-5 py-2.5 text-xs font-bold text-app hover:bg-nvidia-light transition shadow-nvidia-glow"
         >
           <span>Run GPU RunGuard Preflight</span>
           <ArrowRight className="h-3.5 w-3.5" />
@@ -53,7 +53,7 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
 
   const statusColors = {
     GENERATED: "bg-status-warning/15 text-status-warning border-status-warning/40",
-    APPROVED: "bg-nebius-blue/15 text-nebius-blue border-nebius-blue/40",
+    APPROVED: "bg-surface-elevated text-text-primary border-border-standard font-semibold",
     APPLIED: "bg-nvidia-surface text-nvidia-green border-nvidia-border",
     RE_VERIFIED: "bg-nvidia-surface text-nvidia-light border-nvidia-border font-bold",
   };
@@ -82,7 +82,7 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
             {proposedPatch.status === "GENERATED" && (
               <button
                 onClick={onApprovePatch}
-                className="flex items-center gap-2 rounded-xl bg-nebius-blue px-5 py-2.5 text-xs font-bold text-white hover:bg-nebius-blue/80 transition shadow-sm"
+                className="flex items-center gap-2 rounded-xl border border-border-standard bg-surface-elevated px-5 py-2.5 text-xs font-bold text-text-primary hover:border-nvidia-green hover:text-nvidia-green transition shadow-sm"
               >
                 <Check className="h-4 w-4" />
                 <span>Approve Patch</span>
@@ -103,7 +103,7 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
               <button
                 onClick={onReverifyPatch}
                 disabled={isReverifying}
-                className="flex items-center gap-2 rounded-xl bg-nebius-cyan px-5 py-2.5 text-xs font-bold text-app hover:bg-nebius-soft disabled:opacity-50 transition shadow-nebius-glow"
+                className="flex items-center gap-2 rounded-xl bg-nvidia-green px-5 py-2.5 text-xs font-bold text-app hover:bg-nvidia-light disabled:opacity-50 transition shadow-nvidia-glow"
               >
                 {isReverifying ? <RefreshCw className="h-4 w-4 animate-spin text-app" /> : <ShieldCheck className="h-4 w-4 text-app" />}
                 <span>{isReverifying ? "Re-verifying..." : "Run Independent Re-Verification"}</span>
@@ -125,13 +125,13 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
 
         {/* Audit Lifecycle Progress */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
-          <div className={`p-2.5 rounded-xl border ${proposedPatch.status ? "border-nebius-cyan/40 bg-nebius-cyan/10 text-nebius-cyan" : "border-border-subtle text-text-muted"}`}>
+          <div className={`p-2.5 rounded-xl border ${proposedPatch.status ? "border-nvidia-border bg-nvidia-surface text-nvidia-green" : "border-border-subtle text-text-muted"}`}>
             1. Generated
           </div>
-          <div className={`p-2.5 rounded-xl border ${proposedPatch.status === "APPROVED" || proposedPatch.status === "APPLIED" || proposedPatch.status === "RE_VERIFIED" ? "border-nebius-cyan/40 bg-nebius-cyan/10 text-nebius-cyan" : "border-border-subtle text-text-muted"}`}>
+          <div className={`p-2.5 rounded-xl border ${proposedPatch.status === "APPROVED" || proposedPatch.status === "APPLIED" || proposedPatch.status === "RE_VERIFIED" ? "border-nvidia-border bg-nvidia-surface text-nvidia-green" : "border-border-subtle text-text-muted"}`}>
             2. Approved
           </div>
-          <div className={`p-2.5 rounded-xl border ${proposedPatch.status === "APPLIED" || proposedPatch.status === "RE_VERIFIED" ? "border-nebius-cyan/40 bg-nebius-cyan/10 text-nebius-cyan" : "border-border-subtle text-text-muted"}`}>
+          <div className={`p-2.5 rounded-xl border ${proposedPatch.status === "APPLIED" || proposedPatch.status === "RE_VERIFIED" ? "border-nvidia-border bg-nvidia-surface text-nvidia-green" : "border-border-subtle text-text-muted"}`}>
             3. Applied
           </div>
           <div className={`p-2.5 rounded-xl border ${proposedPatch.status === "RE_VERIFIED" ? "border-nvidia-border bg-nvidia-surface text-nvidia-green font-bold" : "border-border-subtle text-text-muted"}`}>
@@ -148,7 +148,7 @@ export const PatchReviewTab: React.FC<PatchReviewTabProps> = ({
         <ul className="space-y-2 text-xs text-text-secondary leading-relaxed">
           {proposedPatch.explanation.map((item, idx) => (
             <li key={idx} className="flex items-start gap-2.5">
-              <span className="text-nebius-cyan font-bold">•</span>
+              <span className="text-nvidia-green font-bold">•</span>
               <span>{item}</span>
             </li>
           ))}

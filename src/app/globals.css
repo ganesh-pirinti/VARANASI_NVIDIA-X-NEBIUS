@@ -3,32 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --bg-app: #071521;
-  --bg-secondary: #0B1722;
-  --bg-elevated: #101F2C;
-  --bg-card: #122432;
-  --bg-input: #0A1823;
-
-  --nebius-cyan: #25C6D8;
-  --nebius-teal: #21B7B0;
-  --nebius-blue: #3978FF;
-  --nebius-soft: #8AEAF0;
+  --bg-app: #0A0A0A;
+  --bg-secondary: #121212;
+  --bg-elevated: #181818;
+  --bg-card: #1E1E1E;
+  --bg-input: #141414;
 
   --nvidia-green: #76B900;
-  --nvidia-surface: #172914;
-  --nvidia-border: #385D22;
+  --nvidia-light: #8ED100;
+  --nvidia-dark: #5E9400;
+  --nvidia-surface: rgba(118, 185, 0, 0.08);
+  --nvidia-border: rgba(118, 185, 0, 0.35);
 
-  --text-primary: #F4F8FC;
-  --text-secondary: #B6C7D5;
-  --text-muted: #8297A8;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #888888;
 
-  --border-standard: #223847;
-  --border-subtle: #1A2D3B;
+  --border-standard: #2A2A2A;
+  --border-subtle: #1F1F1F;
+  --border-active: #404040;
 
   --status-success: #76B900;
-  --status-warning: #F5B94C;
-  --status-error: #FF6B70;
-  --status-info: #38BDF8;
+  --status-warning: #E5A93C;
+  --status-error: #EF4444;
+  --status-info: #CCCCCC;
 
   --background: var(--bg-app);
   --foreground: var(--text-primary);
@@ -57,44 +55,40 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #071521;
+  background: #0A0A0A;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1A2D3B;
+  background: #262626;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #223847;
+  background: #3A3A3A;
 }
 
 /* Technical grid background pattern */
 .bg-grid-pattern {
-  background-size: 36px 36px;
+  background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(34, 56, 71, 0.35) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 56, 71, 0.35) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
-/* Ambient lighting effect for top header / hero */
-.ambient-glow-cyan {
-  background: radial-gradient(circle at 50% 0%, rgba(37, 198, 216, 0.12) 0%, transparent 60%);
-}
-
+/* Ambient lighting effect for top header / hero - subtle NVIDIA green highlight */
 .ambient-glow-nvidia {
-  background: radial-gradient(circle at 100% 0%, rgba(118, 185, 0, 0.10) 0%, transparent 50%);
+  background: radial-gradient(circle at 50% 0%, rgba(118, 185, 0, 0.06) 0%, transparent 60%);
 }
 
 /* Glassmorphism helpers */
 .glass-panel {
-  background: rgba(18, 36, 50, 0.75);
+  background: rgba(26, 26, 26, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid #223847;
+  border: 1px solid #2A2A2A;
 }
 
 .glass-panel-elevated {
-  background: rgba(16, 31, 44, 0.85);
+  background: rgba(30, 30, 30, 0.90);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid #223847;
+  border: 1px solid #333333;
 }

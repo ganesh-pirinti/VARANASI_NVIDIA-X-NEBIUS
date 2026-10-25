@@ -16,10 +16,10 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
   }
 
   return (
-    <div className="rounded-xl border border-border-standard bg-surface-card p-4 hover:border-nebius-cyan/50 transition shadow-card">
+    <div className="rounded-xl border border-border-standard bg-surface-card p-4 hover:border-nvidia-green/50 transition shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <BookOpen className="h-4 w-4 text-nebius-cyan shrink-0" />
+          <BookOpen className="h-4 w-4 text-nvidia-green shrink-0" />
           <span className="text-xs font-semibold text-text-primary line-clamp-1">
             {citation.title}
           </span>
@@ -29,7 +29,7 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
             href={citation.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[11px] font-mono text-nebius-cyan hover:text-nebius-soft hover:underline shrink-0"
+            className="flex items-center gap-1 text-[11px] font-mono text-text-primary hover:text-nvidia-green hover:underline shrink-0"
           >
             <span>{domain}</span>
             <ExternalLink className="h-3 w-3" />

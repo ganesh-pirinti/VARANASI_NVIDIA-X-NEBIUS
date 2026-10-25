@@ -489,7 +489,7 @@ export default function Home() {
             VARANASI — Autonomous GPU RunGuard &amp; FinOps Margin Engine
           </p>
           <p className="text-text-secondary">
-            Track: <span className="text-nebius-cyan font-medium">Coding and Agentic Engineering</span> | Nebius × NVIDIA Global AI Hackathon 2026
+            Track: <span className="text-nvidia-green font-medium">Coding and Agentic Engineering</span> | Nebius × NVIDIA Global AI Hackathon 2026
           </p>
           <p className="text-[11px] text-text-muted">
             Catch failures. Protect compute. Protect margins. All rights reserved.

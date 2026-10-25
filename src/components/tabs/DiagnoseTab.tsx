@@ -37,7 +37,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
           <div>
             <h2 className="text-base font-bold text-text-primary flex items-center gap-2.5">
-              <Sparkles className="h-5 w-5 text-nebius-cyan" />
+              <Sparkles className="h-5 w-5 text-nvidia-green" />
               <span>Diagnose &amp; Investigate — NVIDIA Nemotron &amp; Tavily Search</span>
             </h2>
             <p className="text-xs text-text-muted mt-1 leading-relaxed">
@@ -48,7 +48,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           <button
             onClick={onRunDiagnosis}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-nebius-cyan to-nebius-blue px-6 py-3 text-xs font-bold text-app hover:from-nebius-soft hover:to-nebius-cyan disabled:opacity-50 transition shadow-nebius-glow shrink-0"
+            className="flex items-center justify-center gap-2 rounded-xl bg-nvidia-green px-6 py-3 text-xs font-bold text-app hover:bg-nvidia-light disabled:opacity-50 transition shadow-nvidia-glow shrink-0"
           >
             {isLoading ? <RefreshCw className="h-4 w-4 animate-spin text-app" /> : <Sparkles className="h-4 w-4 text-app" />}
             <span>{isLoading ? "Investigating..." : "Launch Real-Time Investigation"}</span>
@@ -67,8 +67,8 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                     Connected ({systemStatus.nebiusModel})
                   </span>
                 ) : systemStatus?.nebiusStatus === "CONFIGURED" ? (
-                  <span className="text-nebius-cyan flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-nebius-cyan" />
+                  <span className="text-text-secondary flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-text-secondary" />
                     Configured ({systemStatus.nebiusModel})
                   </span>
                 ) : systemStatus?.nebiusStatus === "FAILED" ? (
@@ -99,8 +99,8 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                     Search Endpoint Live &amp; Verified
                   </span>
                 ) : systemStatus?.tavilyStatus === "CONFIGURED" ? (
-                  <span className="text-nebius-cyan flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-nebius-cyan" />
+                  <span className="text-text-secondary flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-text-secondary" />
                     Key Configured (tvly-...)
                   </span>
                 ) : systemStatus?.tavilyStatus === "FAILED" ? (
@@ -126,7 +126,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
       {/* Honest Empty State / Missing Credentials Guidance */}
       {!diagnoseResult && !isLoading && (
         <div className="rounded-2xl border border-border-standard bg-surface-card p-10 text-center space-y-4 shadow-card">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-elevated text-nebius-cyan border border-border-standard shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-elevated text-nvidia-green border border-border-standard shadow-sm">
             <Sparkles className="h-7 w-7" />
           </div>
           <h3 className="text-base font-bold text-text-primary">No Active Investigation</h3>
@@ -167,7 +167,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-5 shadow-card">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-subtle pb-4">
               <div className="flex items-center gap-2.5">
-                <Cpu className="h-4 w-4 text-nebius-cyan" />
+                <Cpu className="h-4 w-4 text-nvidia-green" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
                   NVIDIA Nemotron Technical Diagnosis
                 </h3>
@@ -175,7 +175,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
               <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-text-muted">
                 <span>Model: <strong className="text-text-primary">{diagnoseResult.modelUsed}</strong></span>
                 <span>•</span>
-                <span>Sanitized Tokens: <strong className="text-nebius-cyan">{diagnoseResult.sanitizedTokensProcessed}</strong></span>
+                <span>Sanitized Tokens: <strong className="text-text-primary">{diagnoseResult.sanitizedTokensProcessed}</strong></span>
               </div>
             </div>
 
@@ -184,7 +184,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
               <div className="text-[11px] uppercase font-bold text-text-muted tracking-wider">
                 Likely Root Cause
               </div>
-              <div className="rounded-xl border border-border-subtle bg-surface-input p-4 text-xs font-sans text-text-primary leading-relaxed border-l-4 border-l-nebius-cyan">
+              <div className="rounded-xl border border-border-subtle bg-surface-input p-4 text-xs font-sans text-text-primary leading-relaxed border-l-4 border-l-nvidia-green">
                 {diagnoseResult.likelyRootCause}
               </div>
             </div>
@@ -198,7 +198,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                 <ul className="space-y-2 text-xs text-text-secondary">
                   {diagnoseResult.alternativeExplanations.map((alt, idx) => (
                     <li key={idx} className="flex items-start gap-2.5">
-                      <span className="text-nebius-cyan font-bold">•</span>
+                      <span className="text-nvidia-green font-bold">•</span>
                       <span>{alt}</span>
                     </li>
                   ))}
@@ -215,7 +215,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {diagnoseResult.suggestedActionPlan.map((step, idx) => (
                     <div key={idx} className="rounded-xl border border-border-subtle bg-surface-input p-4 text-xs text-text-secondary leading-relaxed">
-                      <span className="font-mono text-nebius-cyan font-bold mr-1.5">0{idx + 1}.</span> {step}
+                      <span className="font-mono text-nvidia-green font-bold mr-1.5">0{idx + 1}.</span> {step}
                     </div>
                   ))}
                 </div>
@@ -235,7 +235,7 @@ export const DiagnoseTab: React.FC<DiagnoseTabProps> = ({
           <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-4 shadow-card">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border-subtle pb-4 gap-2">
               <div className="flex items-center gap-2.5">
-                <Search className="h-4 w-4 text-nebius-cyan" />
+                <Search className="h-4 w-4 text-nvidia-green" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
                   Live Technical Sources &amp; Documentation Citations ({diagnoseResult.citations.length})
                 </h3>

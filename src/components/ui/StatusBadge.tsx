@@ -50,7 +50,7 @@ export const SeverityBadge: React.FC<{ severity: Severity }> = ({ severity }) =>
     CRITICAL: "border-status-error/50 bg-status-error/15 text-status-error",
     HIGH: "border-status-warning/50 bg-status-warning/15 text-status-warning",
     MEDIUM: "border-amber-500/40 bg-amber-500/10 text-amber-300",
-    LOW: "border-nebius-cyan/40 bg-nebius-cyan/10 text-nebius-cyan",
+    LOW: "border-border-standard bg-surface-elevated text-text-secondary",
     INFO: "border-border-standard bg-surface-elevated text-text-muted",
   };
 

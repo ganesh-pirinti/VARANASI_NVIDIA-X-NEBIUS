@@ -61,9 +61,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1.5 text-[11px] font-mono cursor-help"
             title={error || `${label} API key configured; ready for execution`}
           >
-            <span className="h-2 w-2 rounded-full bg-nebius-cyan" />
+            <span className="h-2 w-2 rounded-full bg-text-secondary" />
             <span className="text-text-muted">{label}:</span>
-            <span className="text-nebius-cyan font-semibold">Configured</span>
+            <span className="text-text-secondary font-semibold">Configured</span>
           </div>
         );
       case "CHECKING":
@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand / Logo */}
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-nebius-cyan/20 to-nebius-blue/30 border border-nebius-cyan/40 text-nebius-cyan shadow-nebius-glow">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-surface-elevated border border-nvidia-border text-nvidia-green shadow-nvidia-glow">
             <ShieldAlert className="h-5 w-5" />
             {/* Subtle NVIDIA Green compute dot */}
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-nvidia-green border-2 border-app"></span>
@@ -118,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-lg font-black tracking-wider text-text-primary">
                 VARANASI
               </span>
-              <span className="rounded-md bg-surface-elevated px-2 py-0.5 text-[10px] font-bold font-mono tracking-wider text-nebius-cyan border border-nebius-cyan/30">
+              <span className="rounded-md bg-surface-elevated px-2 py-0.5 text-[10px] font-bold font-mono tracking-wider text-nvidia-green border border-nvidia-border">
                 NEBIUS × NVIDIA
               </span>
               {loadedFixture && (
@@ -140,10 +140,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowFixtureMenu(!showFixtureMenu)}
-              className="flex items-center gap-1.5 rounded-lg border border-nebius-cyan/40 bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-nebius-cyan hover:bg-surface-card hover:border-nebius-cyan transition shadow-sm"
+              className="flex items-center gap-1.5 rounded-lg border border-border-standard bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-text-primary hover:border-nvidia-green hover:text-nvidia-green transition shadow-sm"
               title="Load realistic test fixtures for evaluation"
             >
-              <Sparkles className="h-3.5 w-3.5 text-nebius-cyan" />
+              <Sparkles className="h-3.5 w-3.5 text-nvidia-green" />
               <span className="hidden sm:inline">Load Demo Workload</span>
               <span className="sm:hidden">Demos</span>
               <ChevronDown className="h-3 w-3" />
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute right-0 mt-2 w-80 rounded-xl border border-border-standard bg-surface-elevated p-2 shadow-2xl z-50 backdrop-blur-xl">
                 <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase text-text-muted border-b border-border-subtle mb-1 flex items-center justify-between">
                   <span>Evaluation Workload Fixtures</span>
-                  <span className="text-[9px] text-nebius-cyan font-bold">Hackathon Suite</span>
+                  <span className="text-[9px] text-nvidia-green font-bold">Hackathon Suite</span>
                 </div>
                 {DEMO_FIXTURES.map((f) => (
                   <button
@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className="w-full text-left rounded-lg p-2.5 hover:bg-surface-card transition group border border-transparent hover:border-border-subtle"
                   >
-                    <div className="text-xs font-semibold text-text-primary group-hover:text-nebius-cyan transition-colors">
+                    <div className="text-xs font-semibold text-text-primary group-hover:text-nvidia-green transition-colors">
                       {f.name}
                     </div>
                     <div className="text-[11px] text-text-muted mt-0.5 line-clamp-1">
@@ -205,11 +205,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setActiveTab(item.id)}
                 className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition ${
                   isActive
-                    ? "bg-nebius-cyan/15 text-nebius-cyan border border-nebius-cyan/35 shadow-sm"
+                    ? "bg-nvidia-surface text-nvidia-green border border-nvidia-green shadow-sm"
                     : "text-text-muted hover:bg-surface-elevated hover:text-text-primary"
                 }`}
               >
-                <Icon className={`h-3.5 w-3.5 ${isActive ? "text-nebius-cyan" : "text-text-muted"}`} />
+                <Icon className={`h-3.5 w-3.5 ${isActive ? "text-nvidia-green" : "text-text-muted"}`} />
                 <span>{item.label}</span>
               </button>
             );

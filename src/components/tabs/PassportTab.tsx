@@ -99,7 +99,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
   if (!passport) {
     return (
       <div className="rounded-2xl border border-border-standard bg-surface-card p-12 text-center space-y-4 shadow-card">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-elevated text-nebius-cyan border border-border-standard shadow-sm">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-elevated text-nvidia-green border border-border-standard shadow-sm">
           <FileText className="h-7 w-7" />
         </div>
         <h3 className="text-base font-bold text-text-primary">Run &amp; Cost Passport Not Assembled</h3>
@@ -109,7 +109,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
         <button
           onClick={onGeneratePassport}
           disabled={isGenerating}
-          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-nebius-cyan px-6 py-3 text-xs font-bold text-app hover:bg-nebius-soft disabled:opacity-50 transition shadow-nebius-glow"
+          className="mt-2 inline-flex items-center gap-2 rounded-xl bg-nvidia-green px-6 py-3 text-xs font-bold text-app hover:bg-nvidia-light disabled:opacity-50 transition shadow-nvidia-glow"
         >
           <FileText className="h-4 w-4 text-app" />
           <span>{isGenerating ? "Compiling Passport..." : "Assemble Run & Cost Passport"}</span>
@@ -129,7 +129,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
               <StatusBadge status={passport.overallRunGuardStatus} size="lg" />
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted mt-1.5 font-mono">
-              <span>ID: <code className="text-nebius-cyan">{passport.id}</code></span>
+              <span>ID: <code className="text-text-primary font-mono">{passport.id}</code></span>
               <span>•</span>
               <span>Timestamp: {passport.createdAt}</span>
               <span>•</span>
@@ -141,7 +141,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleDownloadHtml}
-              className="flex items-center gap-2 rounded-xl bg-nebius-cyan px-4 py-2.5 text-xs font-bold text-app hover:bg-nebius-soft transition shadow-nebius-glow"
+              className="flex items-center gap-2 rounded-xl bg-nvidia-green px-4 py-2.5 text-xs font-bold text-app hover:bg-nvidia-light transition shadow-nvidia-glow"
               title="Download self-contained HTML audit report"
             >
               <Download className="h-3.5 w-3.5 text-app" />
@@ -149,18 +149,18 @@ export const PassportTab: React.FC<PassportTabProps> = ({
             </button>
             <button
               onClick={handleDownloadJson}
-              className="flex items-center gap-2 rounded-xl border border-border-standard bg-surface-elevated px-4 py-2.5 text-xs font-semibold text-text-primary hover:bg-surface-card transition shadow-sm"
+              className="flex items-center gap-2 rounded-xl border border-border-standard bg-surface-elevated px-4 py-2.5 text-xs font-semibold text-text-primary hover:bg-surface-card hover:border-nvidia-green transition shadow-sm"
               title="Download structured JSON"
             >
-              <Download className="h-3.5 w-3.5 text-nebius-cyan" />
+              <Download className="h-3.5 w-3.5 text-text-muted" />
               <span>JSON</span>
             </button>
             <button
               onClick={handleCopyJson}
-              className="flex items-center gap-2 rounded-xl border border-border-standard bg-surface-elevated px-4 py-2.5 text-xs font-semibold text-text-primary hover:bg-surface-card transition shadow-sm"
+              className="flex items-center gap-2 rounded-xl border border-border-standard bg-surface-elevated px-4 py-2.5 text-xs font-semibold text-text-primary hover:bg-surface-card hover:border-nvidia-green transition shadow-sm"
               title="Copy JSON to clipboard"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-nvidia-green" /> : <Copy className="h-3.5 w-3.5 text-nebius-cyan" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-nvidia-green" /> : <Copy className="h-3.5 w-3.5 text-text-muted" />}
               <span>{copied ? "Copied" : "Copy"}</span>
             </button>
           </div>
@@ -172,7 +172,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
             onClick={() => setActiveView("visual")}
             className={`rounded-lg px-3.5 py-1.5 font-semibold transition ${
               activeView === "visual"
-                ? "bg-surface-elevated text-nebius-cyan border border-border-standard shadow-sm"
+                ? "bg-nvidia-surface text-nvidia-green border border-nvidia-border shadow-sm"
                 : "text-text-muted hover:text-text-primary"
             }`}
           >
@@ -182,7 +182,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
             onClick={() => setActiveView("json")}
             className={`rounded-lg px-3.5 py-1.5 font-semibold transition ${
               activeView === "json"
-                ? "bg-surface-elevated text-nebius-cyan border border-border-standard shadow-sm"
+                ? "bg-nvidia-surface text-nvidia-green border border-nvidia-border shadow-sm"
                 : "text-text-muted hover:text-text-primary"
             }`}
           >
@@ -195,7 +195,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
         <div className="space-y-6">
           {/* Section 1: Preflight Results */}
           <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-4 shadow-card">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-nebius-cyan">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
               1. Deterministic Validation State
             </h3>
             <div className="overflow-x-auto">
@@ -214,7 +214,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
                       <td className="py-3 px-4 font-semibold text-text-primary">{c.name}</td>
                       <td className="py-3 px-4 font-mono text-[11px]">
                         {c.isRuntimeTest ? (
-                          <span className="text-nebius-cyan font-semibold">Runtime Test</span>
+                          <span className="text-nvidia-green font-semibold">Runtime Test</span>
                         ) : (
                           <span className="text-text-muted">Static Check</span>
                         )}
@@ -242,7 +242,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
               </div>
               <div className="rounded-xl border border-border-subtle bg-surface-input p-4">
                 <div className="text-[10px] text-text-muted uppercase">Proposed Spend</div>
-                <div className="text-sm font-bold text-nebius-cyan mt-1">
+                <div className="text-sm font-bold text-text-primary mt-1">
                   ${passport.finopsSummary.proposedCostUsd.toFixed(2)} USD
                 </div>
               </div>
@@ -264,10 +264,10 @@ export const PassportTab: React.FC<PassportTabProps> = ({
           {/* Section 3: Diagnostic Investigation & Documentation Evidence */}
           {passport.diagnosticInvestigation && (
             <div className="rounded-2xl border border-border-standard bg-surface-card p-6 space-y-4 shadow-card">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-nebius-cyan">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
                 3. NVIDIA Nemotron AI Diagnostic Reasoning
               </h3>
-              <div className="rounded-xl border border-border-subtle bg-surface-input p-4 text-xs text-text-primary leading-relaxed border-l-4 border-l-nebius-cyan">
+              <div className="rounded-xl border border-border-subtle bg-surface-input p-4 text-xs text-text-primary leading-relaxed border-l-4 border-l-nvidia-green">
                 <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Likely Root Cause</div>
                 {passport.diagnosticInvestigation.likelyRootCause}
               </div>
@@ -284,7 +284,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
                           href={cite.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="font-bold text-nebius-cyan hover:underline flex items-center gap-1.5"
+                          className="font-bold text-text-primary hover:text-nvidia-green hover:underline flex items-center gap-1.5"
                         >
                           <span className="truncate">{cite.title}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
@@ -318,7 +318,7 @@ export const PassportTab: React.FC<PassportTabProps> = ({
                     <tr key={idx} className="hover:bg-surface-elevated/40 transition">
                       <td className="py-3 px-4 text-text-muted text-[11px]">{at.timestamp}</td>
                       <td className="py-3 px-4 text-text-primary font-bold">{at.step}</td>
-                      <td className="py-3 px-4 text-nebius-cyan">{at.actor}</td>
+                      <td className="py-3 px-4 text-text-primary font-semibold">{at.actor}</td>
                       <td className="py-3 px-4 text-text-secondary font-sans leading-relaxed">{at.details}</td>
                     </tr>
                   ))}

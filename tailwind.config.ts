@@ -9,58 +9,61 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Core Design System Tokens
+        // Clean, Classic, Professional NVIDIA Black / White / Grey / Green Palette
         app: {
-          DEFAULT: "#071521",
-          secondary: "#0B1722",
-          elevated: "#101F2C",
-          card: "#122432",
-          input: "#0A1823",
+          DEFAULT: "#0A0A0A", // Near-black background
+          secondary: "#121212", // Secondary dark surface
+          elevated: "#181818", // Elevated panel surface
+          card: "#1E1E1E", // Card surface
+          input: "#141414", // Recessed input surface
         },
         surface: {
-          app: "#071521",
-          secondary: "#0B1722",
-          elevated: "#101F2C",
-          card: "#122432",
-          input: "#0A1823",
-        },
-        nebius: {
-          cyan: "#25C6D8",
-          teal: "#21B7B0",
-          blue: "#3978FF",
-          soft: "#8AEAF0",
+          app: "#0A0A0A",
+          secondary: "#121212",
+          elevated: "#181818",
+          card: "#1E1E1E",
+          input: "#141414",
         },
         nvidia: {
-          green: "#76B900",
-          surface: "#172914",
-          border: "#385D22",
-          light: "#8ED100",
+          green: "#76B900", // Signature NVIDIA Green
+          light: "#8ED100", // Bright highlight / hover
+          dark: "#5E9400", // Dark active green
+          surface: "rgba(118, 185, 0, 0.08)", // Subtle green tint for badges / highlights
+          border: "rgba(118, 185, 0, 0.35)", // Subtle green border
+        },
+        // Aliased to green/white/grey to ensure zero cyan/teal/blue leaks
+        nebius: {
+          cyan: "#76B900",
+          teal: "#76B900",
+          blue: "#CCCCCC",
+          soft: "#8ED100",
         },
         text: {
-          primary: "#F4F8FC",
-          secondary: "#B6C7D5",
-          muted: "#8297A8",
+          primary: "#FFFFFF", // Crisp white
+          secondary: "#CCCCCC", // Clean light grey
+          muted: "#888888", // Balanced neutral grey
         },
         border: {
-          standard: "#223847",
-          subtle: "#1A2D3B",
+          standard: "#2A2A2A", // Clean subtle grey border
+          subtle: "#1F1F1F", // Minimal recessed border
+          active: "#404040", // Focused/hover grey border
         },
         status: {
-          success: "#76B900",
-          warning: "#F5B94C",
-          error: "#FF6B70",
-          info: "#38BDF8",
+          success: "#76B900", // NVIDIA Green
+          warning: "#E5A93C", // Crisp Amber
+          error: "#EF4444", // Clean Red
+          info: "#CCCCCC", // Neutral clean grey
         },
-        // Compatible scale mapping aligned to new palette
+        // Neutral dark grey scale
         navy: {
-          950: "#071521", // Main application background
-          900: "#0B1722", // Secondary background
-          850: "#101F2C", // Elevated surface
-          800: "#122432", // Card surface
-          750: "#162B3C", // Intermediate elevated border/surface
-          700: "#223847", // Standard border
-          650: "#1A2D3B", // Subtle border
-          600: "#2A4557",
+          950: "#0A0A0A",
+          900: "#121212",
+          850: "#181818",
+          800: "#1E1E1E",
+          750: "#242424",
+          700: "#2A2A2A",
+          650: "#1F1F1F",
+          600: "#404040",
         },
       },
       fontFamily: {
@@ -85,10 +88,10 @@ const config: Config = {
         ],
       },
       boxShadow: {
-        "card": "0 4px 20px -2px rgba(3, 10, 16, 0.45), 0 0 0 1px rgba(34, 56, 71, 0.6)",
-        "card-hover": "0 8px 30px -4px rgba(37, 198, 216, 0.12), 0 0 0 1px rgba(37, 198, 216, 0.35)",
-        "nvidia-glow": "0 0 20px -3px rgba(118, 185, 0, 0.25), 0 0 0 1px rgba(56, 93, 34, 0.7)",
-        "nebius-glow": "0 0 24px -3px rgba(37, 198, 216, 0.22), 0 0 0 1px rgba(37, 198, 216, 0.4)",
+        "card": "0 2px 8px rgba(0, 0, 0, 0.6), 0 0 0 1px #262626",
+        "card-hover": "0 4px 16px rgba(0, 0, 0, 0.8), 0 0 0 1px #3A3A3A",
+        "nvidia-glow": "0 0 16px -2px rgba(118, 185, 0, 0.25)",
+        "nebius-glow": "0 0 16px -2px rgba(118, 185, 0, 0.25)",
       },
       borderRadius: {
         "card": "14px",

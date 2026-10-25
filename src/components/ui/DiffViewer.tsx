@@ -35,29 +35,29 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
       {/* Diff Header */}
       <div className="flex flex-wrap items-center justify-between border-b border-border-subtle bg-surface-elevated px-4 py-3 gap-2">
         <div className="flex items-center gap-2.5 text-text-primary">
-          <FileCode className="h-4 w-4 text-nebius-cyan" />
+          <FileCode className="h-4 w-4 text-nvidia-green" />
           <span className="font-semibold text-text-primary text-xs sm:text-sm">{fileName}</span>
           <span className="text-[11px] text-text-muted hidden sm:inline">(Reviewable Unified Diff)</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nebius-cyan/50 hover:text-text-primary transition"
+            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nvidia-green hover:text-text-primary transition"
             title="Copy Patched Content"
           >
             {copied ? (
               <Check className="h-3.5 w-3.5 text-nvidia-green" />
             ) : (
-              <Copy className="h-3.5 w-3.5 text-nebius-cyan" />
+              <Copy className="h-3.5 w-3.5 text-text-muted" />
             )}
             <span>{copied ? "Copied" : "Copy Patch"}</span>
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nebius-cyan/50 hover:text-text-primary transition"
+            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nvidia-green hover:text-text-primary transition"
             title="Download Patched File"
           >
-            <Download className="h-3.5 w-3.5 text-nebius-cyan" />
+            <Download className="h-3.5 w-3.5 text-text-muted" />
             <span>Download</span>
           </button>
         </div>
@@ -68,11 +68,11 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
         {lines.map((line, idx) => {
           let lineBg = "text-text-muted hover:bg-surface-elevated/40";
           if (line.startsWith("+") && !line.startsWith("+++")) {
-            lineBg = "bg-nvidia-surface/80 text-nvidia-light border-l-2 border-nvidia-green pl-2";
+            lineBg = "bg-nvidia-surface text-nvidia-light border-l-2 border-nvidia-green pl-2";
           } else if (line.startsWith("-") && !line.startsWith("---")) {
             lineBg = "bg-status-error/10 text-status-error border-l-2 border-status-error pl-2";
           } else if (line.startsWith("@@") || line.startsWith("---") || line.startsWith("+++")) {
-            lineBg = "text-nebius-cyan font-bold bg-surface-elevated/60 py-0.5 px-1 rounded";
+            lineBg = "text-text-primary font-bold bg-surface-elevated/80 py-0.5 px-1 rounded";
           }
 
           return (
