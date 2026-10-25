@@ -58,7 +58,40 @@ Training and serving modern Large Language Models (e.g. NVIDIA Nemotron, Llama 3
 
 ---
 
-## 3. Mandatory Hackathon Integrations
+## 3. Design System & Visual Identity
+
+VARANASI features an original enterprise design system inspired by **Nebius cloud infrastructure** and accented with signature **NVIDIA green** compute highlights:
+
+### Core Color Palette
+- **Foundations**:
+  - Main App Background: `#071521` (`bg-app`)
+  - Secondary Background: `#0B1722` (`bg-surface-secondary`)
+  - Elevated Surface: `#101F2C` (`bg-surface-elevated`)
+  - Card Surface: `#122432` (`bg-surface-card`)
+  - Input & Code Surface: `#0A1823` (`bg-surface-input`)
+- **Nebius-Inspired Platform Accents**:
+  - Primary Cyan: `#25C6D8` (`nebius-cyan`) — Navigation, primary interactive elements, external links
+  - Platform Teal: `#21B7B0` (`nebius-teal`) — System connectivity, auxiliary pills
+  - Bright Blue: `#3978FF` (`nebius-blue`) — Secondary badges, subtle gradients
+  - Soft Cyan: `#8AEAF0` (`nebius-soft`) — Interactive focus and hover highlights
+- **Selective NVIDIA Compute Accents**:
+  - NVIDIA Green: `#76B900` (`nvidia-green`) — Compute metrics, VRAM headroom gauge, validated PASS status
+  - Muted Green Surface: `#172914` (`nvidia-surface`) — Status badges, verified source indicators
+  - Green Border: `#385D22` (`nvidia-border`) — Verified audit containers, patch addition lines
+- **Typography & Status**:
+  - High-Contrast Primary Text: `#F4F8FC` (`text-primary`)
+  - Secondary Text: `#B6C7D5` (`text-secondary`)
+  - Muted Labels: `#8297A8` (`text-muted`)
+  - Status Indicators: Success (`#76B900`), Warning (`#F5B94C`), Error (`#FF6B70`), Information (`#38BDF8`)
+
+### Design Architecture
+- **Centralized CSS Variables & Tailwind Tokens**: Zero arbitrary scattered hex codes; all components consume centralized semantic tokens.
+- **Micro-Interactions**: Ambient gradient glows (`shadow-nebius-glow`, `shadow-nvidia-glow`), refined glassmorphism (`backdrop-blur-md`), and technical grid overlays (`bg-grid-pattern`).
+- **Zero Horizontal Overflow**: Fully responsive across mobile (390px), tablet (768px), laptop (1024px), desktop (1280px), and ultrawide (1440px+).
+
+---
+
+## 4. Mandatory Hackathon Integrations
 
 ### A. Nebius Token Factory & NVIDIA Open-Source Model
 - **Endpoint**: OpenAI-compatible `/chat/completions` API via `https://api.tokenfactory.nebius.com/v1/`
@@ -76,7 +109,7 @@ Training and serving modern Large Language Models (e.g. NVIDIA Nemotron, Llama 3
 
 ---
 
-## 4. Deterministic Core & Formulas
+## 5. Deterministic Core & Formulas
 
 Critical calculations and verification states are computed mathematically without LLM dependencies.
 
@@ -113,7 +146,7 @@ $$\text{Percentage Difference} = \frac{\Delta C}{\text{Baseline Cost}} \times 10
 
 ---
 
-## 5. Repository Structure
+## 6. Repository Structure
 
 ```
 ├── .env.example                     # Reference environment variables
@@ -183,7 +216,7 @@ $$\text{Percentage Difference} = \frac{\Delta C}{\text{Baseline Cost}} \times 10
 
 ---
 
-## 6. Installation & Local Setup
+## 7. Installation & Local Setup
 
 ### Prerequisites
 - **Node.js**: v18.17+ or v20+ (tested on Node v26.3.1)
@@ -234,7 +267,7 @@ npm start
 
 ---
 
-## 7. Demonstration Guide for Hackathon Judges
+## 8. Demonstration Guide for Hackathon Judges
 
 To evaluate VARANASI without supplying custom cluster files:
 1. Click **Load Demo Workload** in the top navigation bar.
@@ -252,7 +285,7 @@ To evaluate VARANASI without supplying custom cluster files:
 
 ---
 
-## 8. Security & Privacy Guarantees
+## 9. Security & Privacy Guarantees
 
 1. **Zero Secret Leakage**: All external API requests execute on the Next.js server runtime. No API keys (`NEBIUS_API_KEY`, `TAVILY_API_KEY`) are ever bundled in client-side JavaScript or returned in API responses.
 2. **Deterministic Preflight Isolation**: Deterministic preflight evaluation and FinOps calculations do not send any user code or logs to external LLMs.
@@ -261,7 +294,7 @@ To evaluate VARANASI without supplying custom cluster files:
 
 ---
 
-## 9. Known Limitations
+## 10. Known Limitations
 
 - **Price Verification**: Reference prices are gathered from published cloud on-demand pricing sheets (Nebius, AWS, NVIDIA DGX Cloud) as of February 2026. Private enterprise volume discounts and spot availability fluctuate.
 - **Hardware Telemetry**: Static analysis evaluates declared resource requests and configurations. Real-time dynamic GPU temperature, thermal throttling, and hardware memory bus degradation require live host node agents.
@@ -269,6 +302,6 @@ To evaluate VARANASI without supplying custom cluster files:
 
 ---
 
-## 10. License
+## 11. License
 
 This project is licensed under the [MIT License](LICENSE).

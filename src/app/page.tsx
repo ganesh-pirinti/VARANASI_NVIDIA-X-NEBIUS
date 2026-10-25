@@ -395,7 +395,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-app text-text-primary flex flex-col font-sans">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -474,15 +474,15 @@ export default function Home() {
       </main>
 
       {/* Enterprise Footer */}
-      <footer className="border-t border-navy-850 bg-navy-950 py-6 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-7xl px-4 space-y-1">
-          <p className="font-semibold text-slate-400">
-            VARANASI — Autonomous GPU RunGuard & FinOps Margin Engine
+      <footer className="border-t border-border-standard bg-surface-secondary py-8 text-center text-xs text-text-muted">
+        <div className="mx-auto max-w-7xl px-4 space-y-1.5">
+          <p className="font-semibold text-text-primary text-sm tracking-wide">
+            VARANASI — Autonomous GPU RunGuard &amp; FinOps Margin Engine
           </p>
-          <p>
-            Track: Coding and Agentic Engineering | Nebius × NVIDIA Global AI Hackathon 2026
+          <p className="text-text-secondary">
+            Track: <span className="text-nebius-cyan font-medium">Coding and Agentic Engineering</span> | Nebius × NVIDIA Global AI Hackathon 2026
           </p>
-          <p className="text-[11px] text-slate-600">
+          <p className="text-[11px] text-text-muted">
             Catch failures. Protect compute. Protect margins. All rights reserved.
           </p>
         </div>

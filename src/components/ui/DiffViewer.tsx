@@ -23,7 +23,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `patched-${fileName}`;
+    a.download = `patched-${fileName.replace(/^.*[\\/]/, "")}`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -31,53 +31,56 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ fileName, diff, patchedC
   const lines = diff.split(/\r?\n/);
 
   return (
-    <div className="rounded-lg border border-navy-700 bg-navy-950 overflow-hidden font-mono text-xs">
+    <div className="rounded-xl border border-border-standard bg-surface-card overflow-hidden font-mono text-xs shadow-card">
       {/* Diff Header */}
-      <div className="flex items-center justify-between border-b border-navy-800 bg-navy-900/90 px-4 py-2.5">
-        <div className="flex items-center gap-2 text-slate-300">
-          <FileCode className="h-4 w-4 text-cyan-400" />
-          <span className="font-semibold text-slate-200">{fileName}</span>
-          <span className="text-[11px] text-slate-500">(Reviewable Unified Diff)</span>
+      <div className="flex flex-wrap items-center justify-between border-b border-border-subtle bg-surface-elevated px-4 py-3 gap-2">
+        <div className="flex items-center gap-2.5 text-text-primary">
+          <FileCode className="h-4 w-4 text-nebius-cyan" />
+          <span className="font-semibold text-text-primary text-xs sm:text-sm">{fileName}</span>
+          <span className="text-[11px] text-text-muted hidden sm:inline">(Reviewable Unified Diff)</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded bg-navy-800 px-2.5 py-1 text-slate-300 hover:bg-navy-700 transition"
+            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nebius-cyan/50 hover:text-text-primary transition"
             title="Copy Patched Content"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-nvidia-green" />
+            ) : (
+              <Copy className="h-3.5 w-3.5 text-nebius-cyan" />
+            )}
             <span>{copied ? "Copied" : "Copy Patch"}</span>
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 rounded bg-navy-800 px-2.5 py-1 text-slate-300 hover:bg-navy-700 transition"
+            className="flex items-center gap-1.5 rounded-md border border-border-standard bg-surface-card px-3 py-1.5 text-xs font-semibold text-text-secondary hover:border-nebius-cyan/50 hover:text-text-primary transition"
             title="Download Patched File"
           >
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5 text-nebius-cyan" />
             <span>Download</span>
           </button>
         </div>
       </div>
 
       {/* Diff Content */}
-      <div className="overflow-x-auto p-4 max-h-[420px] leading-relaxed">
+      <div className="overflow-x-auto p-4 max-h-[440px] leading-relaxed bg-surface-input">
         {lines.map((line, idx) => {
-          let lineBg = "hover:bg-navy-900/50 text-slate-400";
-          let symbol = " ";
+          let lineBg = "text-text-muted hover:bg-surface-elevated/40";
           if (line.startsWith("+") && !line.startsWith("+++")) {
-            lineBg = "bg-emerald-950/40 text-emerald-300 border-l-2 border-emerald-500 pl-2";
+            lineBg = "bg-nvidia-surface/80 text-nvidia-light border-l-2 border-nvidia-green pl-2";
           } else if (line.startsWith("-") && !line.startsWith("---")) {
-            lineBg = "bg-rose-950/40 text-rose-300 border-l-2 border-rose-500 pl-2";
+            lineBg = "bg-status-error/10 text-status-error border-l-2 border-status-error pl-2";
           } else if (line.startsWith("@@") || line.startsWith("---") || line.startsWith("+++")) {
-            lineBg = "text-cyan-400 font-bold bg-navy-900/60 py-0.5";
+            lineBg = "text-nebius-cyan font-bold bg-surface-elevated/60 py-0.5 px-1 rounded";
           }
 
           return (
-            <div key={idx} className={`flex items-start ${lineBg}`}>
-              <span className="w-8 shrink-0 select-none text-right pr-3 text-slate-600 text-[10px]">
+            <div key={idx} className={`flex items-start font-mono text-[11px] sm:text-xs py-0.5 ${lineBg}`}>
+              <span className="w-8 shrink-0 select-none text-right pr-3 text-text-muted/60 text-[10px]">
                 {idx + 1}
               </span>
-              <span className="whitespace-pre">{line}</span>
+              <span className="whitespace-pre overflow-x-visible">{line}</span>
             </div>
           );
         })}

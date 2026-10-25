@@ -3,37 +3,98 @@
 @tailwind utilities;
 
 :root {
-  --background: #050811;
-  --foreground: #f1f5f9;
+  --bg-app: #071521;
+  --bg-secondary: #0B1722;
+  --bg-elevated: #101F2C;
+  --bg-card: #122432;
+  --bg-input: #0A1823;
+
+  --nebius-cyan: #25C6D8;
+  --nebius-teal: #21B7B0;
+  --nebius-blue: #3978FF;
+  --nebius-soft: #8AEAF0;
+
+  --nvidia-green: #76B900;
+  --nvidia-surface: #172914;
+  --nvidia-border: #385D22;
+
+  --text-primary: #F4F8FC;
+  --text-secondary: #B6C7D5;
+  --text-muted: #8297A8;
+
+  --border-standard: #223847;
+  --border-subtle: #1A2D3B;
+
+  --status-success: #76B900;
+  --status-warning: #F5B94C;
+  --status-error: #FF6B70;
+  --status-info: #38BDF8;
+
+  --background: var(--bg-app);
+  --foreground: var(--text-primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--text-primary);
+  background: var(--bg-app);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom subtle scrollbar */
+/* Custom subtle technical scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090e1c;
+  background: #071521;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a2c56;
+  background: #1A2D3B;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #243d74;
+  background: #223847;
 }
 
 /* Technical grid background pattern */
 .bg-grid-pattern {
-  background-size: 32px 32px;
+  background-size: 36px 36px;
   background-image: 
-    linear-gradient(to right, rgba(26, 44, 86, 0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 44, 86, 0.25) 1px, transparent 1px);
+    linear-gradient(to right, rgba(34, 56, 71, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 56, 71, 0.35) 1px, transparent 1px);
+}
+
+/* Ambient lighting effect for top header / hero */
+.ambient-glow-cyan {
+  background: radial-gradient(circle at 50% 0%, rgba(37, 198, 216, 0.12) 0%, transparent 60%);
+}
+
+.ambient-glow-nvidia {
+  background: radial-gradient(circle at 100% 0%, rgba(118, 185, 0, 0.10) 0%, transparent 50%);
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(18, 36, 50, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #223847;
+}
+
+.glass-panel-elevated {
+  background: rgba(16, 31, 44, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid #223847;
 }

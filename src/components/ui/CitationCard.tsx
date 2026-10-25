@@ -7,7 +7,6 @@ interface CitationCardProps {
 }
 
 export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
-  // Extract domain name safely
   let domain = "";
   try {
     const parsed = new URL(citation.url);
@@ -17,11 +16,11 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
   }
 
   return (
-    <div className="rounded-lg border border-navy-750 bg-navy-900/60 p-3.5 hover:border-cyan-500/40 transition">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <BookOpen className="h-4 w-4 text-cyan-400 shrink-0" />
-          <span className="text-xs font-semibold text-slate-200 line-clamp-1">
+    <div className="rounded-xl border border-border-standard bg-surface-card p-4 hover:border-nebius-cyan/50 transition shadow-card">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <BookOpen className="h-4 w-4 text-nebius-cyan shrink-0" />
+          <span className="text-xs font-semibold text-text-primary line-clamp-1">
             {citation.title}
           </span>
         </div>
@@ -30,7 +29,7 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
             href={citation.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 hover:underline shrink-0"
+            className="flex items-center gap-1 text-[11px] font-mono text-nebius-cyan hover:text-nebius-soft hover:underline shrink-0"
           >
             <span>{domain}</span>
             <ExternalLink className="h-3 w-3" />
@@ -38,17 +37,19 @@ export const CitationCard: React.FC<CitationCardProps> = ({ citation }) => {
         )}
       </div>
 
-      <p className="mt-2 text-xs text-slate-400 leading-relaxed line-clamp-3">
+      <p className="mt-2.5 text-xs text-text-secondary leading-relaxed line-clamp-3">
         {citation.snippet}
       </p>
 
-      <div className="mt-2.5 flex items-center justify-between border-t border-navy-800/80 pt-2 text-[10px] text-slate-500">
-        <span className="flex items-center gap-1 text-emerald-400/80 font-mono">
-          <ShieldCheck className="h-3 w-3" />
+      <div className="mt-3 flex items-center justify-between border-t border-border-subtle pt-2.5 text-[10px]">
+        <span className="flex items-center gap-1 text-nvidia-green font-mono font-medium">
+          <ShieldCheck className="h-3.5 w-3.5" />
           Live Verified External Reference
         </span>
         {citation.relevanceScore !== undefined && (
-          <span className="font-mono">Relevance: {(citation.relevanceScore * 100).toFixed(0)}%</span>
+          <span className="font-mono text-text-muted">
+            Relevance: {(citation.relevanceScore * 100).toFixed(0)}%
+          </span>
         )}
       </div>
     </div>
